@@ -1,24 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     tools:context=".CompositionActivity"
-    android:backgroundTint="@color/colorBackground"
-    android:orientation="vertical">
-
-
+    android:background="@color/colorBackground">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tv_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorBackground"
+            android:text="All Clips"
+            android:textSize="34sp"
+            android:layout_centerInParent="true"
+            android:paddingTop="10dp"/>
+    </RelativeLayout>
     <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_audio_clips"
+        <GridLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            ></androidx.recyclerview.widget.RecyclerView>
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|top"
+            android:alignmentMode="alignMargins"
+            android:columnCount="3"
+            android:padding="5dp"
+            android:rowCount="2">
+
+            <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/mtrl_card_spacing"
+                android:layout_marginTop="@dimen/mtrl_card_spacing"
+                android:layout_marginRight="@dimen/mtrl_card_spacing"
+                android:backgroundTint="@color/colorBackground">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <CheckBox
+                        android:id="@+id/cb_audio_clip_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:button="@drawable/statelistdrawable"
+                        android:buttonTint="@color/colorIconAccent"
+                        android:gravity="center" />
+
+                    <SeekBar
+                        android:id="@+id/cb_sb_volume_1"
+                        android:layout_width="100dp"
+                        android:layout_height="16dp"
+                        android:progressBackgroundTint="@color/colorPrimary"
+                        android:thumbTint="@color/colorIconAccent" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/mtrl_card_spacing"
+                android:layout_marginTop="@dimen/mtrl_card_spacing"
+                android:layout_marginRight="@dimen/mtrl_card_spacing"
+                android:backgroundTint="@color/colorBackground">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <CheckBox
+                        android:id="@+id/cb_audio_clip_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:button="@drawable/grasshopperStateList"
+                        android:buttonTint="@color/colorIconAccent"
+                        android:gravity="center" />
+
+                    <SeekBar
+                        android:id="@+id/cb_sb_volume_2"
+                        android:layout_width="100dp"
+                        android:layout_height="16dp"
+                        android:progressBackgroundTint="@color/colorPrimary"
+                        android:thumbTint="@color/colorIconAccent" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/mtrl_card_spacing"
+                android:layout_marginTop="@dimen/mtrl_card_spacing"
+                android:layout_marginRight="@dimen/mtrl_card_spacing"
+                android:backgroundTint="@color/colorBackground">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <CheckBox
+                        android:id="@+id/cb_audio_clip_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:button="@drawable/moderaterainStateList"
+                        android:buttonTint="@color/colorIconAccent"
+                        android:gravity="center" />
+
+                    <SeekBar
+                        android:id="@+id/cb_sb_volume_3"
+                        android:layout_width="100dp"
+                        android:layout_height="16dp"
+                        android:progressBackgroundTint="@color/colorPrimary"
+                        android:thumbTint="@color/colorIconAccent"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/mtrl_card_spacing"
+                android:layout_marginTop="@dimen/mtrl_card_spacing"
+                android:layout_marginRight="@dimen/mtrl_card_spacing"
+                android:backgroundTint="@color/colorBackground">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <CheckBox
+                        android:id="@+id/cb_audio_clip_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:button="@drawable/windyweatherStateList"
+                        android:buttonTint="@color/colorIconAccent"
+                        android:gravity="center" />
+
+                    <SeekBar
+                        android:id="@+id/cb_sb_volume_4"
+                        android:layout_width="100dp"
+                        android:layout_height="16dp"
+                        android:progressBackgroundTint="@color/colorPrimary"
+                        android:thumbTint="@color/colorIconAccent" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </com.google.android.material.card.MaterialCardView>
+
+        </GridLayout>
 
         <com.google.android.material.bottomappbar.BottomAppBar
             android:id="@+id/navigation_compose"
@@ -39,5 +191,4 @@
             app:layout_anchor="@id/navigation_compose" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-</androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

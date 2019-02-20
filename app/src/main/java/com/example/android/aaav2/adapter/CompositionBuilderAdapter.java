@@ -104,7 +104,6 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
             clip.setTitle(snapshot.get("title").toString());
             clip.setVolume(snapshot.get("volume").toString());
 
-            VectorDrawableCompat icon = new VectorDrawableCompat(
 
             Resources resources = itemView.getResources();
 
