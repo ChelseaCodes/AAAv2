@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:layout_marginLeft="@dimen/mtrl_card_spacing"
+    android:layout_marginTop="@dimen/mtrl_card_spacing"
+    android:layout_marginRight="@dimen/mtrl_card_spacing"
+    android:backgroundTint="@color/colorBackground">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!--<ImageButton-->
+            <!--android:id="@+id/ib_audio_icon"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--android:backgroundTint="@color/fui_transparent"-->
+            <!--android:src="@drawable/ic_rainy"-->
+            <!--/>-->
+        <CheckBox
+            android:id="@+id/cb_audio_clip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:button="@drawable/ic_rainy"/>
+        <!--<com.google.android.material.button.MaterialButton-->
+            <!--style="@style/Widget.MaterialComponents.Button.Icon"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:backgroundTint="@color/fui_transparent"-->
+            <!--app:icon="@drawable/ic_rainy"-->
+            <!--/>-->
+        <SeekBar
+            android:id="@+id/cb_sb_volume"
+            android:layout_width="100dp"
+            android:layout_height="16dp"
+            android:visibility="invisible"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</com.google.android.material.card.MaterialCardView>

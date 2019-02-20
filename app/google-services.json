@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "159887372929",
+    "firebase_url": "https://ambientaudio0002.firebaseio.com",
+    "project_id": "ambientaudio0002",
+    "storage_bucket": "ambientaudio0002.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:159887372929:android:60c2be84a03e314d",
+        "android_client_info": {
+          "package_name": "com.example.android.aaav2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "159887372929-fg6dgjaqbvm5cgej5sh2540vdualam8s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.android.aaav2",
+            "certificate_hash": "b7c1f974c7594c31f464f21099703ba8aeabbf39"
+          }
+        },
+        {
+          "client_id": "159887372929-io791p2kc2k4nm2kh57o447fc3c5sf6d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArwOxpII_Xn8X-E9y6s0d7HxWRnBHxWlU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "159887372929-io791p2kc2k4nm2kh57o447fc3c5sf6d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
