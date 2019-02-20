@@ -1,6 +1,7 @@
 package com.example.android.aaav2.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -11,6 +12,7 @@ import com.example.android.aaav2.FileHelper;
 import com.example.android.aaav2.Repository;
 import com.example.android.aaav2.model.AudioClip;
 
+import java.io.IOException;
 import java.util.List;
 
 import androidx.lifecycle.AndroidViewModel;
@@ -29,6 +31,7 @@ public class CompositionBuilderViewModel extends AndroidViewModel {
 
     private Repository sourceOfTruth;
     private MutableLiveData<List<AudioClip>> mAllAudioClips;
+    private MutableLiveData<List<String>> mCategories;
     private String mUserID;
     private int [] audioClipIDs;
     private int [] audioStreamIDs;
@@ -39,7 +42,7 @@ public class CompositionBuilderViewModel extends AndroidViewModel {
     public CompositionBuilderViewModel(Application app){
         super(app);
         //mUserID = userID;
-        sourceOfTruth = new Repository(new Repository.FirestoreCallback() {
+        sourceOfTruth = new Repository(app, new Repository.FirestoreCallback() {
             @Override
             public void onDataLoaded(List<AudioClip> list) {
                 Log.d(TAG, "Data has been loaded and recieved from Repo");
@@ -67,6 +70,7 @@ public class CompositionBuilderViewModel extends AndroidViewModel {
     private void ViewInit(List<AudioClip> list){
         mAllAudioClips = new MutableLiveData<>();
         mAllAudioClips.setValue(list);
+        mCategories = sourceOfTruth.getCategories();
 
         if(mAllAudioClips != null){
             int size = list.size();
@@ -101,10 +105,16 @@ public class CompositionBuilderViewModel extends AndroidViewModel {
     *
     * */
     private void createPoolIDs(){
+        Context ctx = getApplication().getApplicationContext();
         int i = 0;
         for (AudioClip c : mAllAudioClips.getValue()){
-            audioClipIDs[i++] = mSoundPool.load(
-                  fileHelper.getFile(c.getFileName()).getPath()  , 1);
+            try {
+                audioClipIDs[i++] = mSoundPool.load(
+                      ctx.getAssets().openFd(c.getFileName()) , 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

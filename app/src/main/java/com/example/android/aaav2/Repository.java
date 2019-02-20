@@ -1,5 +1,6 @@
 package com.example.android.aaav2;
 
+import android.app.Application;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -45,24 +46,32 @@ public class Repository {
     //This class is used to copy and retrieve files from storage
     private FirebaseStorage mStorage;
     private File mStorageDirectory;
+    private FileHelper fileHelper;
     private StorageReference audioClipsRawRef;
 
     private MutableLiveData<List<AudioClip>> mAllAudioClips;
+    private MutableLiveData<List<String>> mCategories;
 
     private FirestoreCallback listener;
 
-    public Repository(FirestoreCallback L, File storageDirectory){
+    public Repository(Application app, FirestoreCallback L, File storageDirectory){
         mFirestore = FirebaseFirestore.getInstance();
         mStorage = FirebaseStorage.getInstance();
+        fileHelper = new FileHelper(app.getApplicationContext());
         //reference to noSQL database
         audioClipsRef = mFirestore.collection("audio_clips");
         mAllAudioClips = new MutableLiveData<>();
+        mCategories = new MutableLiveData<>();
         listener = L;
         mStorageDirectory = storageDirectory;
         //ref to Storage - where clip data is stored in the cloud
         audioClipsRawRef = mStorage.getReference().child("audio");
         mNumber_clips_left_to_dl = 0;
         readData();
+    }
+
+    public MutableLiveData<List<String>> getCategories() {
+        return mCategories;
     }
 
     private void readData(){
@@ -73,8 +82,9 @@ public class Repository {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if(task.isSuccessful()){
                             ArrayList<AudioClip> mAllAudioClipsList = new ArrayList<>();
-                            //for every snapshot in the task returned create a fucking
-                            //audio clip
+                            ArrayList<String> categories = new ArrayList<>();
+
+                            //for every snapshot in the task returned create audio clip
                             for(QueryDocumentSnapshot doc : task.getResult()){
                                 AudioClip clip = new AudioClip();
 
@@ -85,14 +95,24 @@ public class Repository {
                                 clip.setVolume(doc.get("volume").toString());
 
                                 mAllAudioClipsList.add(clip);
-                                File f = new File(mStorageDirectory, clip.getFileName());
-                                if(!f.isFile()) {
-                                    mNumber_clips_left_to_dl +=1;
-                                    _downloadBytes(clip);
+
+                                //collect list of all categories will use to create tabs
+                                if(!categories.contains(clip.getCategory())){
+                                    categories.add(clip.getCategory());
                                 }
+
+                                //if(fileHelper.copyAssetToStorage(clip.getFileName())){
+//                                    File f = fileHelper.getFile(clip.getFileName());
+//
+//                                    if(!f.isFile()) {
+//                                        mNumber_clips_left_to_dl +=1;
+//                                        _downloadBytes(clip);
+//                                    }
+                                //}
                             }
 
                             mAllAudioClips.postValue(mAllAudioClipsList);
+                            mCategories.postValue(categories);
 
                             if(mNumber_clips_left_to_dl == 0){
                                 listener.onDataLoaded(mAllAudioClipsList);

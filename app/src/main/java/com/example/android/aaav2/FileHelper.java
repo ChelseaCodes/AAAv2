@@ -11,6 +11,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import androidx.annotation.NonNull;
@@ -37,6 +38,33 @@ public class FileHelper {
         this.storageDirectory = context.getFilesDir();
         storage = FirebaseStorage.getInstance();
         this.storageReference = storage.getReference().child("audio");
+    }
+
+    public boolean copyAssetToStorage(String fileName){
+        String path="audio";
+        String completepath = path + "/" + fileName;
+
+        File file = new File(storageDirectory, fileName);
+        if(file.exists()){
+            return true;
+        }
+
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+
+        try {
+            inputStream = context.getAssets().open(completepath);
+            outputStream = new FileOutputStream(file);
+            copy(inputStream, outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeStream(inputStream);
+            closeStream(outputStream);
+        }
+
+        return true;
     }
 
     public void setOnDownloadCompleteListener(CompositionBuilderViewModel.OnDownloadCompleted listener){
@@ -99,6 +127,15 @@ public class FileHelper {
             if(mListener != null){
                 mListener.onDownloadCompleted();
             }
+        }
+    }
+
+    private void copy(InputStream input, OutputStream output)
+            throws IOException {
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int n;
+        while(-1 != (n = input.read(buffer))){
+            output.write(buffer, 0,n);
         }
     }
 

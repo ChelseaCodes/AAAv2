@@ -86,6 +86,7 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
         @BindView(R.id.cb_sb_volume)
         SeekBar audioVolumeBar;
 
+        AudioClip mClip;
         public ViewHolder(View itemView) {
             super(itemView);
 
@@ -104,7 +105,7 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
             clip.setTitle(snapshot.get("title").toString());
             clip.setVolume(snapshot.get("volume").toString());
 
-
+            mClip = clip;
             Resources resources = itemView.getResources();
 
             audioVolumeBar.setVisibility(INVISIBLE);
@@ -151,6 +152,27 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
                    }
                }
             });
+        }
+
+        /*
+        * setIcon is a very important function for the UI. a state list drawable will have to be
+        * made for each audio clip item and it will have to be set by adding to this ifelse chain.
+        * It's cancerous. I know. I don't know what else to do at the moment so this is how it is.
+        * */
+        private void setIcon(){
+            String title = mClip.getTitle();
+            if(title == "Gusty"){
+                audioCheckBox.setButtonDrawable(R.drawable.windyweatherStateList);
+            }
+            else if(title == "Open Window"){
+                audioCheckBox.setButtonDrawable(R.drawable.moderaterainStateList);
+            }
+            else if(title == "Closed Window"){
+                audioCheckBox.setButtonDrawable(R.drawable.statelistdrawable);
+            }
+            else if(title == "Crickets"){
+                audioCheckBox.setButtonDrawable(R.drawable.grasshopperStateList);
+            }
         }
     }
 }

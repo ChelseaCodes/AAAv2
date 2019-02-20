@@ -10,6 +10,7 @@ import butterknife.ButterKnife;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.android.aaav2.adapter.CompositionBuilderAdapter;
 import com.example.android.aaav2.model.AudioClip;
@@ -79,7 +80,7 @@ public class CompositionActivity extends AppCompatActivity implements
         mAdapter = new CompositionBuilderAdapter(mQuery, this, this){
             @Override
             protected void onDataChanged(){
-
+                Log.d(TAG, "DATA WAS CHANGED IN CompBuilderAdapter");
                 //data should not change
             }
             @Override
