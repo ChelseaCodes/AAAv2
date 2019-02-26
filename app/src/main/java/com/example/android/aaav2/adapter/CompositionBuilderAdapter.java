@@ -15,7 +15,6 @@ import com.google.firebase.firestore.Query;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -106,11 +105,14 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
             clip.setVolume(snapshot.get("volume").toString());
 
             mClip = clip;
+            setIcon();
             Resources resources = itemView.getResources();
 
-            audioVolumeBar.setVisibility(INVISIBLE);
+
             //default seekbar range is 0-100 volume accepts 0 - 1
-            audioVolumeBar.setThumbOffset(100);
+            audioVolumeBar.setProgress(100);
+            audioVolumeBar.setVisibility(INVISIBLE);
+
             audioVolumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -126,11 +128,11 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    //default seekbar range is 0-100 volume accepts 0 - 1
-                   float volume = seekBar.getThumbOffset() * 0.01f;
-                   if(volumeListener != null){
-                       volumeListener.onVolumeChangedListener(snapshot, volume, getAdapterPosition());
-                   }
+//                    //default seekbar range is 0-100 volume accepts 0 - 1
+//                   float volume = seekBar.getThumbOffset() * 0.01f;
+//                   if(volumeListener != null){
+//                       volumeListener.onVolumeChangedListener(snapshot, volume, getAdapterPosition());
+//                   }
                 }
             });
 
@@ -139,12 +141,14 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
                public void onClick(View v){
                    if(listener != null){
                        //volumebar invisible means not clicked yet
-                       if(audioVolumeBar.getVisibility() == INVISIBLE){
+                       if(audioCheckBox.isChecked()){
+                           audioCheckBox.setChecked(true);
                            audioVolumeBar.setVisibility(VISIBLE);
 
                            listener.onAudioClipSelected(snapshot,PLAYBACK_PLAY, getAdapterPosition());
                        }
                        else{
+                           audioCheckBox.setChecked(false);
                            audioVolumeBar.setVisibility(INVISIBLE);
                            listener.onAudioClipSelected(snapshot,PLAYBACK_PAUSE, getAdapterPosition());
                        }
@@ -161,18 +165,21 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
         * */
         private void setIcon(){
             String title = mClip.getTitle();
-            if(title == "Gusty"){
-                audioCheckBox.setButtonDrawable(R.drawable.windyweatherStateList);
+            if(title.equalsIgnoreCase("Gusty")){
+                audioCheckBox.setButtonDrawable(R.drawable.windy_state_list);
+
             }
-            else if(title == "Open Window"){
-                audioCheckBox.setButtonDrawable(R.drawable.moderaterainStateList);
+            else if(title.equalsIgnoreCase("Open Window")){
+                audioCheckBox.setButtonDrawable(R.drawable.moderate_rain_state_list);
             }
-            else if(title == "Closed Window"){
-                audioCheckBox.setButtonDrawable(R.drawable.statelistdrawable);
+            else if(title.equalsIgnoreCase("Closed Window")){
+                audioCheckBox.setButtonDrawable(R.drawable.light_rain_state_list);
             }
-            else if(title == "Crickets"){
-                audioCheckBox.setButtonDrawable(R.drawable.grasshopperStateList);
+            else if(title.equalsIgnoreCase("Crickets")){
+                audioCheckBox.setButtonDrawable(R.drawable.grasshopper_state_list);
             }
+
+            audioCheckBox.refreshDrawableState();
         }
     }
 }

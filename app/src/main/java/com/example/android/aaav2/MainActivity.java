@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "launching Composition Activity");
 
         Intent intent = new Intent(this, CompositionActivity.class);
+        //Intent intent = new Intent(this, AudioClipPickerActivity.class);
         startActivity(intent);
 
     }
