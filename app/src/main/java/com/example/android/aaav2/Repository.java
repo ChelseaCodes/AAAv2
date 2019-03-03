@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 /**
@@ -43,16 +42,36 @@ public class Repository {
     private FirebaseFirestore mFirestore;
     private CollectionReference audioClipsRef;
 
-    //This class is used to copy and retrieve files from storage
     private FirebaseStorage mStorage;
     private File mStorageDirectory;
     private FileHelper fileHelper;
     private StorageReference audioClipsRawRef;
 
+    //todo: have allaudioclips be a list of lists of audio clips and add each categorylist to it
+    private ArrayList<List<AudioClip>> ALLCLIPS;
     private MutableLiveData<List<AudioClip>> mAllAudioClips;
     private MutableLiveData<List<String>> mCategories;
+    private MutableLiveData<List<AudioClip>> mWaterWeatherClips;
+    private MutableLiveData<List<AudioClip>> mAnimalsCrittersClips;
+    private MutableLiveData<List<AudioClip>> mWavesClips;
+    private MutableLiveData<List<AudioClip>> mFireClips;
+    private MutableLiveData<List<AudioClip>> mCityClips;
+    private MutableLiveData<List<AudioClip>> mUserClips;
+    public int Num_Clips = 0;
+    public int mNumber_clips_left_to_dl;
 
     private FirestoreCallback listener;
+    //private WaterWeatherDownloadedListener waterWeatherDownloadedListener;
+
+    public interface FirestoreCallback{
+        void onDataLoaded(ArrayList<List<AudioClip>> list);
+    }
+    public interface DataDownloadedListener{
+        void onDataDownloaded(AudioClip clip);
+    }
+    public interface WaterWeatherDownloadedListener{
+        void onWaterWeatherDownloaded(List<AudioClip> list);
+    }
 
     public Repository(Application app, FirestoreCallback L, File storageDirectory){
         mFirestore = FirebaseFirestore.getInstance();
@@ -60,45 +79,118 @@ public class Repository {
         fileHelper = new FileHelper(app.getApplicationContext());
         //reference to noSQL database
         audioClipsRef = mFirestore.collection("audio_clips");
+
+        ALLCLIPS = new ArrayList<>();
         mAllAudioClips = new MutableLiveData<>();
         mCategories = new MutableLiveData<>();
+        mWaterWeatherClips = new MutableLiveData<>();
+        mAnimalsCrittersClips = new MutableLiveData<>();
+        mWavesClips = new MutableLiveData<>();
+        mFireClips = new MutableLiveData<>();
+        mCityClips = new MutableLiveData<>();
+        mUserClips = new MutableLiveData<>();
+
         listener = L;
         mStorageDirectory = storageDirectory;
+
         //ref to Storage - where clip data is stored in the cloud
         audioClipsRawRef = mStorage.getReference().child("audio");
         mNumber_clips_left_to_dl = 0;
-        readData();
+
+        readAllAudioClip();
+        //readAllAudioClipsByCategory();
+
+
     }
 
     public MutableLiveData<List<String>> getCategories() {
         return mCategories;
     }
 
-    private void readData(){
-       audioClipsRef
+    public MutableLiveData<List<AudioClip>> getWaterWeatherClips() {
+        return mWaterWeatherClips;
+    }
+
+    public MutableLiveData<List<AudioClip>> getAnimalsCrittersClips() {
+        return mAnimalsCrittersClips;
+    }
+
+    public MutableLiveData<List<AudioClip>> getWavesClips() {
+        return mWavesClips;
+    }
+
+    public MutableLiveData<List<AudioClip>> getFireClips() {
+        return mFireClips;
+    }
+
+    public MutableLiveData<List<AudioClip>> getCityClips() {
+        return mCityClips;
+    }
+
+    public MutableLiveData<List<AudioClip>> getUserClips() {
+        return mUserClips;
+    }
+
+    public ArrayList<List<AudioClip>> getAllAudioClips(){ return ALLCLIPS; }
+
+    public int getNum_Clips() {
+        return Num_Clips;
+    }
+
+    //minimize queries. I will load by category and just add to this list too. by the end it'll
+    //be all audio clips anyways.
+
+
+    private void readAllAudioClip(){
+        //gets all audio clips and filters/adds to category lists
+        audioClipsRef
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if(task.isSuccessful()){
                             ArrayList<AudioClip> mAllAudioClipsList = new ArrayList<>();
+
+                            ArrayList<AudioClip> mWaterWeatherClipsList = new ArrayList<>();
+                            ArrayList<AudioClip> mAnimalCritterClipsList = new ArrayList<>();
+//                            ArrayList<AudioClip> mWaves = new ArrayList<>();
+//                            ArrayList<AudioClip> mFire = new ArrayList<>();
+//                            ArrayList<AudioClip> mUserUpload = new ArrayList<>();
                             ArrayList<String> categories = new ArrayList<>();
 
                             //for every snapshot in the task returned create audio clip
                             for(QueryDocumentSnapshot doc : task.getResult()){
+                                Num_Clips += 1;
                                 AudioClip clip = new AudioClip();
 
-                                clip.setCategory(doc.get("category").toString());
-                                clip.setEmoji(doc.get("emoji").toString());
-                                clip.setFileName(doc.get("file_name").toString());
+                                clip.setDocumentID(doc.getId());
                                 clip.setTitle(doc.get("title").toString());
-                                clip.setVolume(doc.get("volume").toString());
+                                clip.setCategory(doc.get("category").toString());
+                                //clip.setEmoji(doc.get("emoji").toString());
+                                clip.setFile_Name(doc.get("file_name").toString());
+                                clip.setVolume("1.0");
 
-                                mAllAudioClipsList.add(clip);
+                                //mAllAudioClipsList.add(clip);
 
                                 //collect list of all categories will use to create tabs
                                 if(!categories.contains(clip.getCategory())){
                                     categories.add(clip.getCategory());
+                                }
+
+                                //add clip by category to each category list
+                                switch(clip.getCategory()){
+                                    case "Water & Weather":
+                                        mWaterWeatherClipsList.add(clip);
+                                    case "Animals & Critters":
+                                        mAnimalCritterClipsList.add(clip);
+                                    case "Waves":
+                                        //mWaves.add(clip);
+                                    case "Fire":
+                                        //mFire.add(clip);
+                                    case "User Uploaded":
+                                        //mUserUpload.add(clip);
+                                    default:
+                                        //nothing
                                 }
 
                                 //if(fileHelper.copyAssetToStorage(clip.getFileName())){
@@ -111,11 +203,19 @@ public class Repository {
                                 //}
                             }
 
-                            mAllAudioClips.postValue(mAllAudioClipsList);
+                            //mAllAudioClips.postValue(mAllAudioClipsList);
+                            mWaterWeatherClips.postValue(mWaterWeatherClipsList);
+//                            mAnimalsCrittersClips.postValue(mAnimalCritterClipsList);
+//                            mWavesClips.postValue(mWaves);
+//                            mFireClips.postValue(mFire);
+//                            mUserClips.postValue(mUserUpload);
                             mCategories.postValue(categories);
+                            //todo: update and add other clips to said list
+                            ALLCLIPS.add(mWaterWeatherClipsList);
+                            ALLCLIPS.add(mAnimalCritterClipsList);
 
                             if(mNumber_clips_left_to_dl == 0){
-                                listener.onDataLoaded(mAllAudioClipsList);
+                                listener.onDataLoaded(ALLCLIPS);
                             }
                         }
                         else{
@@ -124,18 +224,60 @@ public class Repository {
                     }
                 });
     }
-    public int mNumber_clips_left_to_dl;
-    public interface FirestoreCallback{
-        void onDataLoaded(List<AudioClip> list);
-    }
-    public interface DataDownloadedListener{
-        void onDataDownloaded(AudioClip clip);
+
+    private void readAllAudioClipsByCategory(){
+        readWaterWeather();
     }
 
-    public LiveData<List<AudioClip>> getAllAudioClips(){ return mAllAudioClips; }
+    private void readWaterWeather(){
+       audioClipsRef.whereEqualTo("category", "Water & Weather")
+               .get()
+               .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                   @Override
+                   public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                       if(task.isSuccessful()){
+                           ArrayList<AudioClip> mWaterWeather = new ArrayList<>();
+
+                           for(QueryDocumentSnapshot doc : task.getResult()){
+                               //todo: might break
+                               //doc.toObject(AudioClip.class);
+                               AudioClip clip = new AudioClip();
+
+                               clip.setTitle(doc.get("title").toString());
+                               clip.setCategory(doc.get("category").toString());
+                               clip.setFile_Name(doc.get("file_name").toString());
+
+                               clip.setVolume("1.0");
+
+                               mWaterWeather.add(clip);
+
+                               //if(fileHelper.copyAssetToStorage(clip.getFileName())){
+//                                    File f = fileHelper.getFile(clip.getFileName());
+//
+//                                    if(!f.isFile()) {
+//                                        mNumber_clips_left_to_dl +=1;
+//                                        _downloadBytes(clip);
+//                                    }
+                               //}
+                           }
+
+                           mWaterWeatherClips.postValue(mWaterWeather);
+                       }
+                       else{
+                           Log.d(TAG, "Error getting documents: ", task.getException());
+                       }
+                   }
+               });
+    }
+//    private void readAnimalCritter{}
+//
+//    private void readWaves{}
+//    private void readFire{}
+//    private void readCity{}
+//    private void readUserUploaded{}
 
     private void _downloadBytes(final AudioClip clip_dl){
-        final StorageReference clip = audioClipsRawRef.child(clip_dl.getFileName());
+        final StorageReference clip = audioClipsRawRef.child(clip_dl.getFile_Name());
 
         clip.getBytes(DEFAULT_BUFFER_SIZE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
@@ -147,11 +289,11 @@ public class Repository {
                        if(mNumber_clips_left_to_dl != 0){
                            mNumber_clips_left_to_dl -= 1;
                            if(mNumber_clips_left_to_dl == 0){
-                               listener.onDataLoaded(mAllAudioClips.getValue());
+                               listener.onDataLoaded(ALLCLIPS);
                            }
                        }
                        else
-                           listener.onDataLoaded(mAllAudioClips.getValue());
+                           listener.onDataLoaded(ALLCLIPS);
                    }
                }).execute();
             }
@@ -186,7 +328,7 @@ public class Repository {
             // Data for clip is returned and stored
             //decrements number of files to download
             //file to be saved under %AUDIOCLIPTITLE%
-            File file = new File(mStorageDirectory, mClip.getFileName());
+            File file = new File(mStorageDirectory, mClip.getFile_Name());
 
             //output stream needed to write files to
             OutputStream outputStream = null;

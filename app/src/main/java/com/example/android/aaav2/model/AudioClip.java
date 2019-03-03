@@ -4,31 +4,32 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
 public class AudioClip {
-    private String mClipID;
+    private String documentID;
     private String category;
     private String title;
-    private String length;
     private String volume;
     private String emoji;
     private String file_name;
+    private int _StreamingID;
+    private int _SoundPoolID;
 
-    public AudioClip(String mClipID, String mCategory, String mTitle, String mLength, String mVolume, String mEmoji, String mFileName) {
-        this.mClipID = mClipID;
+    public AudioClip(String mClipID, String mCategory, String mTitle, String mVolume, String mEmoji, String mFileName) {
+        this.documentID = mClipID;
         this.category = mCategory;
         this.title = mTitle;
-        this.length = mLength;
         this.volume = mVolume;
         this.emoji = mEmoji;
         this.file_name = mFileName;
     }
-    public AudioClip(){};
 
-    public String getClipID() {
-        return mClipID;
+    public AudioClip(){}; //needed for Firebase auto mapping
+
+    public String getDocumentID() {
+        return documentID;
     }
 
-    public void setClipID(String mClipID) {
-        this.mClipID = mClipID;
+    public void setDocumentID(String mClipID) {
+        this.documentID = mClipID;
     }
 
     public String getCategory() {
@@ -47,14 +48,6 @@ public class AudioClip {
         this.title = mTitle;
     }
 
-    public String getLength() {
-        return length;
-    }
-
-    public void setLength(String mLength) {
-        this.length = mLength;
-    }
-
     public String getVolume() {
         return volume;
     }
@@ -71,11 +64,28 @@ public class AudioClip {
         this.emoji = mEmoji;
     }
 
-    public String getFileName() {
+    public String getFile_Name() {
         return file_name;
     }
 
-    public void setFileName(String mFileName) {
-        this.file_name = mFileName;
+    public void setFile_Name(String file_name) {
+        this.file_name = file_name;
+    }
+
+    public int getStreamingID() {
+        return _StreamingID;
+    }
+
+    public void setStreamingID(int _StreamingID) {
+        this._StreamingID = _StreamingID;
+    }
+
+    public int get_SoundPoolID() {
+        return _SoundPoolID;
+    }
+
+    public void set_SoundPoolID(int _SoundPoolID) {
+        this._SoundPoolID = _SoundPoolID;
     }
 }
+

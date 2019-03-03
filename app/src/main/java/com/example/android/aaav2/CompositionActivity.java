@@ -5,15 +5,19 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.PagerTitleStrip;
+import androidx.viewpager.widget.ViewPager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toolbar;
 
+import com.example.android.aaav2.adapter.AudioClipPickerAdapter;
 import com.example.android.aaav2.adapter.CompositionBuilderAdapter;
 import com.example.android.aaav2.model.AudioClip;
 import com.example.android.aaav2.viewmodel.CompositionBuilderViewModel;
@@ -42,21 +46,21 @@ public class CompositionActivity extends AppCompatActivity implements AudioCateg
 
     private String TAG = "CompositionActivity";
 
-    private CompositionBuilderAdapter mAdapter;
     private CompositionBuilderViewModel mViewModel;
-
-    private FirebaseAuth mAuth; //needed to authenticate users when App boots
-    private FirebaseFirestore mFirestore; //needed to access collections/docs
-    private Query mQuery;
-
-    @BindView(R.id.rv_audio_clips)
-    RecyclerView recyclerView;
 
     @BindView(R.id.fab_save)
     FloatingActionButton fab_save;
 
     @BindView(R.id.navigation_compose)
     BottomAppBar nav_compose;
+
+    @BindView(R.id.vp_audio_clip_view_pager)
+    ViewPager viewPager;
+
+    @BindView(R.id.pt_category_title)
+    PagerTitleStrip titleStrip;
+
+    AudioClipPickerAdapter adapterViewPager;
 
 //    @BindView(R.id.tb_toolbar)
 //    Toolbar toolbar;
@@ -71,52 +75,30 @@ public class CompositionActivity extends AppCompatActivity implements AudioCateg
 
         //init before using any Firebase components
         FirebaseApp.initializeApp(this);
-        //Firebase authentication
-        mAuth = FirebaseAuth.getInstance();
-        mFirestore = FirebaseFirestore.getInstance();
 
         nav_compose.setFabAlignmentMode(FAB_ALIGNMENT_MODE_END);
 
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.category_fragment, new AudioCategoryFragment())
-                .commit();
-    }
+        //associate ViewModel w this UI controller
+        mViewModel = ViewModelProviders.of(this).get(CompositionBuilderViewModel.class);
+        mViewModel.setDataDownloadedListener(new CompositionBuilderViewModel.DataDownloadedListener() {
+            @Override
+            public void onDataDownloaded() {
+                //TODO LAUNCH CATEGORYVIEWPAGERFRAGMENT
+//                getSupportFragmentManager().beginTransaction()
+//                        .add(R.id.category_fragment, new CategoryViewPagerFragment())
+//                        .commit();
+                //viewPager = findViewById(R.id.vp_audio_clip_view_pager);
+                adapterViewPager = new AudioClipPickerAdapter(getSupportFragmentManager());
 
-//    private void initRecyclerView(){
-//        mQuery = mFirestore.collection("audio_clips");
-//
-//        mAdapter = new CompositionBuilderAdapter(mQuery, this, this){
-//            @Override
-//            protected void onDataChanged(){
-//                Log.d(TAG, "DATA WAS CHANGED IN CompBuilderAdapter");
-//                //data should not change
-//            }
-//            @Override
-//            protected void onError(FirebaseFirestoreException e) {
-//                // Show a snackbar on errors
-//                Snackbar.make(findViewById(android.R.id.content),
-//                        "Error: check logs for info.", Snackbar.LENGTH_LONG).show();
-//            }
-//        };
-//
-//        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-//        recyclerView.setAdapter(mAdapter);
-//    }
+                viewPager.setAdapter(adapterViewPager);
+            }
+        });
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        //associate ViewModel w this UI controller
-//        mViewModel = ViewModelProviders.of(this).get(CompositionBuilderViewModel.class);
-//        mViewModel.setDataDownloadedListener(new CompositionBuilderViewModel.DataDownloadedListener() {
-//            @Override
-//            public void onDataDownloaded() {
-//                initRecyclerView();
-//
-//                if(mAdapter != null)
-//                    mAdapter.startListening();
-//            }
-//        });
+
     }
 
     @Override

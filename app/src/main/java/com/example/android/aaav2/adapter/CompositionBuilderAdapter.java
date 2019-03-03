@@ -10,8 +10,9 @@ import android.widget.SeekBar;
 
 import com.example.android.aaav2.R;
 import com.example.android.aaav2.model.AudioClip;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.Query;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
+import com.firebase.ui.firestore.paging.FirestorePagingOptions;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,48 +28,68 @@ import static com.example.android.aaav2.CompositionActivity.PLAYBACK_PLAY;
 /*
  * Adapter creates views (via AudioViewHolder) for items and replaces the content w/ data and returns
  * information about the data like how many items in a given data source
+ *
+ * The FirestorePagingAdapter binds a Query to a RecyclerView by loading documents in pages.
  * */
-public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuilderAdapter.ViewHolder>{
+public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip, CompositionBuilderAdapter.ViewHolder> {
+    /**
+     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
+     * FirestoreRecyclerOptions} for configuration options.
+     *
+     * @param options
+     */
+    public CompositionBuilderAdapter(@NonNull FirestorePagingOptions<AudioClip> options, OnAudioClipSelectedListener listener
+    , OnVolumeChangedListener volListener) {
+        super(options);
+        mListener = listener;
+        mVolumeChangedListener = volListener;
+    }
+    //
+//    public CompositionBuilderAdapter(Query query, OnAudioClipSelectedListener listener,
+//                                     OnVolumeChangedListener volumeChangedListener){
+//        super(query);
+//        mListener = listener;
+//        mVolumeChangedListener = volumeChangedListener;
+//    }
 
+    //adapterPos used to find clip in SoundPool
     public interface OnAudioClipSelectedListener{
-        void onAudioClipSelected(DocumentSnapshot AudioClip, int playback, int adapterPos);
+        void onAudioClipSelected(AudioClip ac, int playback, int adapterPos);
     }
 
     public interface OnVolumeChangedListener{
-        void onVolumeChangedListener(DocumentSnapshot AudioClip, float volume, int adapterPos);
+        void onVolumeChangedListener(AudioClip ac, float volume, int adapterPos);
     }
 
     private OnAudioClipSelectedListener mListener;
     private OnVolumeChangedListener mVolumeChangedListener;
-
-    public CompositionBuilderAdapter(Query query, OnAudioClipSelectedListener listener,
-                                     OnVolumeChangedListener volumeChangedListener){
-        super(query);
-        mListener = listener;
-        mVolumeChangedListener = volumeChangedListener;
-    }
-
 
     @Override
     public void onViewRecycled(@NonNull ViewHolder holder) {
         super.onViewRecycled(holder);
         //release mediasource
     }
+
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View audioView = inflater.inflate(R.layout.audio_clip_list_item, parent, false);
         return new ViewHolder(audioView);
     }
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        //holder.bind(getSnapshot(position), mListener);
-        //gets DocumentSnapshot and sends to ViewHolder to set up
-        //DocumentSnapshot contains data read from doc in Firestore
-        holder.bind(getSnapshot(position), position, mListener, mVolumeChangedListener);
-    }
+//    @Override
+//    public void onBindViewHolder(ViewHolder holder, int position) {
+//        //holder.bind(getSnapshot(position), mListener);
+//        //gets DocumentSnapshot and sends to ViewHolder to set up
+//        //DocumentSnapshot contains data read from doc in Firestore
+//        //holder.bind(position, mListener, mVolumeChangedListener);
+//    }
 
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder viewHolder, int i, @NonNull AudioClip audioClip) {
+        viewHolder.bind(i, audioClip, mListener, mVolumeChangedListener);
+    }
 
     /*A ViewHolder describes an item view and metadata about its place within the RecyclerView.
     * Adapter should add fields for caching expensive Bind results
@@ -92,19 +113,21 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
             ButterKnife.bind(this, itemView);
         }
 
-        public void bind(final DocumentSnapshot snapshot, int i, final OnAudioClipSelectedListener listener,
+        public void bind(int position, AudioClip ac, final OnAudioClipSelectedListener listener,
                          final OnVolumeChangedListener volumeListener) {
             Log.d(TAG, "Binding");
 
             AudioClip clip = new AudioClip();
 
-            clip.setCategory(snapshot.get("category").toString());
-            clip.setEmoji(snapshot.get("emoji").toString());
-            clip.setFileName(snapshot.get("file_name").toString());
-            clip.setTitle(snapshot.get("title").toString());
-            clip.setVolume(snapshot.get("volume").toString());
+            clip.setDocumentID(ac.getDocumentID());
+            clip.setCategory(ac.getCategory());
+            //clip.setEmoji(snapshot.get("emoji").toString());
+            clip.setFile_Name(ac.getFile_Name());
+            clip.setTitle(ac.getTitle());
+            clip.setVolume(ac.getVolume());
 
             mClip = clip;
+
             setIcon();
             Resources resources = itemView.getResources();
 
@@ -119,7 +142,7 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
                     //default seekbar range is 0-100 volume accepts 0 - 1
                     float volume = progress * 0.01f;
                     if(volumeListener != null){
-                        volumeListener.onVolumeChangedListener(snapshot, volume, getAdapterPosition());
+                        volumeListener.onVolumeChangedListener(mClip, volume, getAdapterPosition());
                     }
                 }
 
@@ -145,12 +168,12 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
                            audioCheckBox.setChecked(true);
                            audioVolumeBar.setVisibility(VISIBLE);
 
-                           listener.onAudioClipSelected(snapshot,PLAYBACK_PLAY, getAdapterPosition());
+                           listener.onAudioClipSelected(mClip,PLAYBACK_PLAY, getAdapterPosition());
                        }
                        else{
                            audioCheckBox.setChecked(false);
                            audioVolumeBar.setVisibility(INVISIBLE);
-                           listener.onAudioClipSelected(snapshot,PLAYBACK_PAUSE, getAdapterPosition());
+                           listener.onAudioClipSelected(mClip,PLAYBACK_PAUSE, getAdapterPosition());
                        }
 
                    }
@@ -164,19 +187,49 @@ public class CompositionBuilderAdapter extends FirestoreAdapter<CompositionBuild
         * It's cancerous. I know. I don't know what else to do at the moment so this is how it is.
         * */
         private void setIcon(){
+            //todo: can set up string based case stmnt
             String title = mClip.getTitle();
-            if(title.equalsIgnoreCase("Gusty")){
-                audioCheckBox.setButtonDrawable(R.drawable.windy_state_list);
 
-            }
-            else if(title.equalsIgnoreCase("Open Window")){
-                audioCheckBox.setButtonDrawable(R.drawable.moderate_rain_state_list);
-            }
-            else if(title.equalsIgnoreCase("Closed Window")){
-                audioCheckBox.setButtonDrawable(R.drawable.light_rain_state_list);
-            }
-            else if(title.equalsIgnoreCase("Crickets")){
-                audioCheckBox.setButtonDrawable(R.drawable.grasshopper_state_list);
+            switch(title){
+                case "Gusty":
+                    audioCheckBox.setButtonDrawable(R.drawable.windy_state_list);
+                    break;
+                case "Open Window":
+                    audioCheckBox.setButtonDrawable(R.drawable.moderate_rain_state_list);
+                    break;
+                case "Crickets":
+                    audioCheckBox.setButtonDrawable(R.drawable.grasshopper_state_list);
+                    break;
+                case "Closed Window":
+                    audioCheckBox.setButtonDrawable(R.drawable.light_rain_state_list);
+                    break;
+                case "Frogs":
+                    audioCheckBox.setButtonDrawable(R.drawable.frog_state_list);
+                    break;
+                case "Birds":
+                    audioCheckBox.setButtonDrawable(R.drawable.bird_state_list);
+                    break;
+                case "Gentle Waves":
+                    audioCheckBox.setButtonDrawable(R.drawable.ocean_state_list);
+                    break;
+                case "Small Campfire":
+                    audioCheckBox.setButtonDrawable(R.drawable.campfire_state_list);
+                    break;
+                case "Cafe":
+                    audioCheckBox.setButtonDrawable(R.drawable.cafe_state_list);
+                    break;
+                case "Delta":
+                    audioCheckBox.setButtonDrawable(R.drawable.wave_state_list);
+                    break;
+                case "Fireplace":
+                    audioCheckBox.setButtonDrawable(R.drawable.fireplace_state_list);
+                    break;
+                case "Cats Purr":
+                    audioCheckBox.setButtonDrawable(R.drawable.cat_state_list);
+                    break;
+                default:
+                    //nothing
+                    break;
             }
 
             audioCheckBox.refreshDrawableState();

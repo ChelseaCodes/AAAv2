@@ -1,6 +1,7 @@
 package com.example.android.aaav2;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,9 +12,9 @@ import android.view.ViewGroup;
 import com.example.android.aaav2.adapter.CompositionBuilderAdapter;
 import com.example.android.aaav2.model.AudioClip;
 import com.example.android.aaav2.viewmodel.CompositionBuilderViewModel;
+import com.firebase.ui.firestore.paging.FirestorePagingOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -21,6 +22,7 @@ import com.google.firebase.firestore.Query;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
@@ -36,6 +38,7 @@ import butterknife.BindView;
  */
 public class AudioCategoryFragment extends Fragment implements
         CompositionBuilderAdapter.OnAudioClipSelectedListener, CompositionBuilderAdapter.OnVolumeChangedListener {
+
     @BindView(R.id.rv_audio_clips)
     RecyclerView recyclerView;
 
@@ -43,7 +46,7 @@ public class AudioCategoryFragment extends Fragment implements
     public static final int PLAYBACK_PAUSE = 0;
     public static final int PLAYBACK_STOP = 2;
 
-    private String TAG = "CompositionActivity";
+    private String TAG = "AudioCategoryFragment";
 
     private CompositionBuilderAdapter mAdapter;
     private CompositionBuilderViewModel mViewModel;
@@ -59,16 +62,18 @@ public class AudioCategoryFragment extends Fragment implements
 
     private static final String ARG_PARAM2 = "param2";
 
-
-
     // TODO: Rename and change types of parameters
-    private String mParam1;
+    private String mCategoryName;
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
     public AudioCategoryFragment() {
         // Required empty public constructor
+
+        //Firebase authentication
+        mAuth = FirebaseAuth.getInstance();
+        mFirestore = FirebaseFirestore.getInstance();
     }
 
     /**
@@ -93,61 +98,70 @@ public class AudioCategoryFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(mCategoryDisplayName);
+            mCategoryName = getArguments().getString(mCategoryDisplayName);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAdapter.startListening();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        mAdapter.stopListening();
+    }
+
     /*
     * The fragment created is the AudioCategoryFragment which includes a RecyclerView of
     * the category and a bottom app barrrrrr
+    *
+    *  ensures that the fragment's root view is non-null.
+     * Any view setup should happen here. E.g., view lookups, attaching listeners.
     * */
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate layout - the recyclerview one
+       // // Inflate layout - the recyclerview one
         View v = inflater.inflate(R.layout.category_view, container, false);
+        recyclerView = v.findViewById(R.id.rv_audio_clips);
 
+        initRecyclerView();
 
         return v;
     }
 
+    // Setup any handles to view objects here
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         mViewModel = ViewModelProviders.of(getActivity()).get(CompositionBuilderViewModel.class);
-
-        mViewModel.setDataDownloadedListener(new CompositionBuilderViewModel.DataDownloadedListener() {
-            @Override
-            public void onDataDownloaded() {
-                initRecyclerView();
-
-                if(mAdapter != null)
-                    mAdapter.startListening();
-            }
-        });
     }
 
     private void initRecyclerView(){
-        mQuery = mFirestore.collection("audio_clips");
+        mQuery = mFirestore.collection("audio_clips").whereEqualTo("category", mCategoryName);
 
-        mAdapter = new CompositionBuilderAdapter(mQuery, this, this){
-            @Override
-            protected void onDataChanged(){
-                Log.d(TAG, "DATA WAS CHANGED IN CompBuilderAdapter");
-                //data should not change
-            }
-            @Override
-            protected void onError(FirebaseFirestoreException e) {
-                // Show a snackbar on errors
-                Snackbar.make(getActivity().findViewById(android.R.id.content),
-                        "Error: check logs for info.", Snackbar.LENGTH_LONG).show();
-            }
-        };
+        PagedList.Config config = new PagedList.Config.Builder()
+                .setEnablePlaceholders(false)
+                .setPageSize(1)
+                .build();
 
-        recyclerView.setLayoutManager(new GridLayoutManager(this.getContext(), 2));
+        FirestorePagingOptions<AudioClip> options = new FirestorePagingOptions.Builder<AudioClip>()
+                .setLifecycleOwner(this)
+                .setQuery(mQuery, config, AudioClip.class)
+                .build();
+
+        mAdapter = new CompositionBuilderAdapter(options, this, this);
+
+        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
         recyclerView.setAdapter(mAdapter);
+        recyclerView.setHasFixedSize(true);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -175,22 +189,22 @@ public class AudioCategoryFragment extends Fragment implements
     }
 
     @Override
-    public void onAudioClipSelected(DocumentSnapshot AudioClip, int playback, int adapterPos) {
-        com.example.android.aaav2.model.AudioClip clip = AudioClip.toObject(com.example.android.aaav2.model.AudioClip.class);
+    public void onAudioClipSelected(AudioClip ac, int playback, int adapterPos) {
+        //com.example.android.aaav2.model.AudioClip clip = ac.toObject(com.example.android.aaav2.model.AudioClip.class);
 
         switch(playback){
             case PLAYBACK_PAUSE:
-                mViewModel.pauseAudio(adapterPos);
+                mViewModel.pauseAudio(ac);
                 break;
             case PLAYBACK_PLAY:
-                mViewModel.playAudio(adapterPos);
+                mViewModel.playAudio(ac);
                 break;
         }
     }
 
     @Override
-    public void onVolumeChangedListener(DocumentSnapshot AudioClip, float volume, int adapterPos) {
-        mViewModel.setAudioVolume(adapterPos, volume);
+    public void onVolumeChangedListener(AudioClip ac, float volume, int adapterPos) {
+        mViewModel.setAudioVolume(ac, volume);
     }
 
     /**
