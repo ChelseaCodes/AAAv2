@@ -104,6 +104,7 @@ public class CompositionActivity extends AppCompatActivity implements AudioCateg
     @Override
     public void onFragmentInteraction(Uri uri) {
         //use viewmodel i assume
+        Uri i = uri;
     }
 
     /*

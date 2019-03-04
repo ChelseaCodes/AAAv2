@@ -30,9 +30,9 @@ public class AudioClipPickerAdapter extends FragmentStatePagerAdapter {
             case 0:
                 return AudioCategoryFragment.newInstance("Water & Weather", "");
             case 1:
-                return AudioCategoryFragment.newInstance("Fire", "");
-            case 2:
                 return AudioCategoryFragment.newInstance("Animals & Critters", "");
+            case 2:
+                return AudioCategoryFragment.newInstance("Fire", "");
             case 3:
                 return AudioCategoryFragment.newInstance("City", "");
             case 4:
@@ -49,7 +49,7 @@ public class AudioClipPickerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return 1;
+        return 2;
     }
 
     @Nullable
@@ -60,9 +60,9 @@ public class AudioClipPickerAdapter extends FragmentStatePagerAdapter {
             case 0:
                 return "Water & Weather";
             case 1:
-                return "Fire";
-            case 2:
                 return "Animals & Critters";
+            case 2:
+                return "Fire";
             case 3:
                 return "City";
             case 4:
@@ -75,4 +75,5 @@ public class AudioClipPickerAdapter extends FragmentStatePagerAdapter {
                 return null;
         }
     }
+
 }

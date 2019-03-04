@@ -1,9 +1,13 @@
 package com.example.android.aaav2;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +59,9 @@ public class AudioCategoryFragment extends Fragment implements
     private FirebaseFirestore mFirestore; //needed to access collections/docs
     private Query mQuery;
 
+    private MediaBrowserCompat mMediaBrowser;
+    private MediaBrowserHelper mMediaBrowserHelper;
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String mCategoryDisplayName = "";
@@ -97,6 +104,11 @@ public class AudioCategoryFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        mMediaBrowser = new MediaBrowserCompat(this,
+//                new ComponentName(this, MediaPlaybackService.class),
+//                connectionCallbacks,
+//                null);
+
         if (getArguments() != null) {
             mCategoryName = getArguments().getString(mCategoryDisplayName);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -149,7 +161,7 @@ public class AudioCategoryFragment extends Fragment implements
 
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
-                .setPageSize(1)
+                .setPageSize(2)
                 .build();
 
         FirestorePagingOptions<AudioClip> options = new FirestorePagingOptions.Builder<AudioClip>()
@@ -181,6 +193,8 @@ public class AudioCategoryFragment extends Fragment implements
                     + " must implement OnFragmentInteractionListener");
         }
     }
+
+
 
     @Override
     public void onDetach() {
