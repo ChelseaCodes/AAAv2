@@ -1,9 +1,7 @@
 package com.example.android.aaav2.viewmodel;
 
 import android.app.Application;
-import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.util.Log;
 
 import com.example.android.aaav2.FileHelper;
@@ -11,6 +9,9 @@ import com.example.android.aaav2.MediaPlayerPool;
 import com.example.android.aaav2.R;
 import com.example.android.aaav2.Repository;
 import com.example.android.aaav2.model.AudioClip;
+import com.example.android.aaav2.model.AudioComposition;
+import com.firebase.ui.firestore.ObservableSnapshotArray;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,21 +46,21 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
 
     private MediaPlayerPool mMediaPlayerPool;
 
-    private HashMap<String, Integer> mSoundMap;
     private HashMap<String, MediaPlayer> mStreamMap;
-    private int [] audioClipIDs;
-    private int [] audioStreamIDs;
-    private SoundPool mSoundPool;
     private FileHelper fileHelper;
 
     private DataDownloadedListener downloadedListener;
+    private AudioComposition mComposition;
+
+    //Firestore Arrays to keep UI information
+    ObservableSnapshotArray<AudioClip> mWaterWeatherSnapshotArray;
 
     public CompositionBuilderViewModel(Application app){
         super(app);
-        //mUserID = userID;
-        mSoundMap = new HashMap<>();
+        mUserID = FirebaseAuth.getInstance().getUid();
         mStreamMap = new HashMap<>();
-        sourceOfTruth = new Repository(app, new Repository.FirestoreCallback() {
+        mComposition = new AudioComposition();
+        sourceOfTruth = new Repository(app, new Repository.OnDataLoadedListener() {
             @Override
             public void onDataLoaded(ArrayList<List<AudioClip>> list) {
                 Log.d(TAG, "Data has been loaded and recieved from Repo");
@@ -68,12 +69,25 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
                 ViewInit(list);
             }
         }, app.getApplicationContext().getFilesDir() );
+        sourceOfTruth.ReadAllClips();
         mAllAudioClips = null;
         fileHelper = new FileHelper(app.getApplicationContext());
     }
 
+    public void RemoveUserWIP(){
+        sourceOfTruth.RemoveUserWIP();
+    }
+
+    public String getUserID(){ return mUserID; }
     public void setDataDownloadedListener(DataDownloadedListener L){
         downloadedListener = L;
+    }
+
+    public ObservableSnapshotArray<AudioClip> getWaterWeatherSnapshotArray() {
+        if(mWaterWeatherSnapshotArray != null)
+            return mWaterWeatherSnapshotArray;
+        else
+            return null;
     }
 
     @Override
@@ -91,132 +105,16 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
     * */
     private void ViewInit(ArrayList<List<AudioClip>> list){
         ALLCLIPS = list;
-        //mAllAudioClips = new MutableLiveData<>();
-        //mAllAudioClips.setValue(list);
-        //mCategories = sourceOfTruth.getCategories();
-        mWaterWeatherClips = sourceOfTruth.getWaterWeatherClips();
-        mAnimalsCrittersClips = sourceOfTruth.getAnimalsCrittersClips();
 
         //if(mAllAudioClips != null){
         int size = sourceOfTruth.getNum_Clips();
 
         mMediaPlayerPool = new MediaPlayerPool(getApplication().getApplicationContext(), size);
-//       audioClipIDs = new int[size];
-//       audioStreamIDs = new int[size];
-//
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-//
-//            //audio attributes and SoundPool set up
-//            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-//                    .setUsage(AudioAttributes.USAGE_MEDIA)
-//                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-//                    .build();
-//
-//            mSoundPool = new SoundPool.Builder()
-//                    .setMaxStreams(size)
-//                    .setAudioAttributes(audioAttributes).build();
-//
-//        }else{
-//            mSoundPool = new SoundPool(6, AudioManager.STREAM_MUSIC, 0);
-//        }
 
+        //let Activity know data is ready.
+        if(downloadedListener != null)
+            downloadedListener.onDataDownloaded();
 
-           // createPoolIDs();
-
-            //let Activity know data is ready.
-            if(downloadedListener != null)
-                downloadedListener.onDataDownloaded();
-
-    }
-
-    /*
-    * populates audioClipIDs for reference when mSoundPool needs to Play/Pause/Stop
-    *
-    * */
-    private void createPoolIDs(){
-//        Context ctx = getApplication().getApplicationContext();
-//        int i = 0;
-//        for(List<AudioClip> list : ALLCLIPS) {
-//            for (AudioClip c : list) {
-////                try {
-////                    if (c.getFile_Name() != "") {
-////                        switch(c.getTitle()){
-////                            case "Gusty":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.zapsplat_zapsplat_nature_wind_strong_tall_trees_storm_001_17777, this
-////                                ));
-////                                break;
-////                            case "Open Window":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.gain_walkers_rain, this
-////                                ));
-////                                break;
-////                            case "Crickets":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.zapsplat_animals_insects_grasshopper_17949, this
-////                                ));
-////                                break;
-////                            case "Closed Window":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.ftus_rain_wind_blow_rain_against_window_drips, this
-////                                ));
-////                                break;
-////                            case "Frogs":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.frog_sound_effect, this
-////                                ));
-////
-////                                break;
-////                            case "Birds":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.bird_sounds, this
-////                                ));
-////
-////                                break;
-////                            case "Gentle Waves":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw.ocean_waves_gentle, this
-////                                ));
-////
-////                                break;
-////                            case "Small Campfire":
-////                                mSoundMap.put(c.getTitle(), mMediaPlayerPool.Load(
-////                                        R.raw., this
-////                                ));
-////
-////                                break;
-////                            case "Cafe":
-////
-////                                break;
-////                            case "Delta":
-////
-////                                break;
-////                            case "Fireplace":
-////
-////                                break;
-////                            case "Cats Purr":
-////
-////                                break;
-////                            default:
-////                                //nothing
-////                                break;
-////                        }
-//                        //audioClipIDs[i++] = mSoundPool.load(
-////                        c.set_SoundPoolID(
-////                                mSoundPool.load(
-////                                        ctx.getAssets().openFd(c.getFile_Name()), 1)
-////                        );
-//
-////                        mSoundMap.put(c.getTitle(), mSoundPool.load(
-////                                      ctx.getAssets().openFd(c.getFile_Name()), 1) );
-//                        //mSoundMap.put(c.getTitle(), mMediaPlayerPool.Play())
-//                    }
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
     }
 
     public LiveData<List<AudioClip>> getAllAudioClips(){
@@ -224,11 +122,12 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
     }
 
     public MutableLiveData<List<AudioClip>> getWaterWeatherClips() {
+        mWaterWeatherClips = sourceOfTruth.getWaterWeatherClips();
         return mWaterWeatherClips;
     }
 
     public void playAudio(AudioClip clip){
-        Context ctx = getApplication().getApplicationContext();
+        //Context ctx = getApplication().getApplicationContext();
         String title = clip.getTitle();
         MediaPlayer p = null;
 
@@ -256,7 +155,6 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
                 break;
             case "Small Campfire":
                 p = mMediaPlayerPool.Play(R.raw.small_campfire, this);
-
                 break;
             case "Cafe":
                 p = mMediaPlayerPool.Play(R.raw.cafe_city_sounds, this);
@@ -281,28 +179,43 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
 
         if( p != null){
             mStreamMap.put(title, p);
+            sourceOfTruth.UpdateClip(clip);
         }
 
     }
 
     public void pauseAudio(AudioClip ac){
-        //mSoundPool.pause(audioStreamIDs[adapterPos]);
-        //mSoundPool.pause(mStreamMap.get(ac.getTitle()));
         MediaPlayer m = mStreamMap.get(ac.getTitle());
         if(m.isPlaying()){
-            m.pause();
+            m.stop();
+            m.reset();
+            sourceOfTruth.UpdateClip(ac);
         }
     }
-
-
     public void setAudioVolume(AudioClip ac, float volume){
-        //todo: dbl check volume is an okay value to set
-        //mSoundPool.setVolume(mStreamMap.get(ac.getTitle()), volume, volume);
         MediaPlayer m = mStreamMap.get(ac.getTitle());
         if(m.isPlaying()){
             m.setVolume(volume, volume);
         }
+        sourceOfTruth.UpdateClip(ac);
     }
+
+    /* Called when composition activity is done composing
+    * */
+    public void stopAudio(){
+        for(MediaPlayer m : mStreamMap.values()){
+            m.stop();
+            m.reset();
+        }
+        mStreamMap.clear();
+        mMediaPlayerPool.DestoryAll();
+    }
+
+    /*************************************************
+    *
+     *     Audio Composition Bits
+    *
+    * ************************************************/
 
     public interface OnDownloadCompleted{
         void onDownloadCompleted();

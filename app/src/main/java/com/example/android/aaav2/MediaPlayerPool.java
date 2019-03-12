@@ -83,9 +83,12 @@ public final class MediaPlayerPool {
         return null;
     }
 
-//    public int Play(@RawRes int rawID, MediaPlayer.OnPreparedListener listener){
-//        return -1;
-//    }
+    public void DestoryAll(){
+        for(int i = 0; i < mPlayersInUse.size(); i++){
+            MediaPlayer m = mPlayersInUse.get(i);
+            recyclePlayer(m);
+        }
+    }
 
     /* returns the MediaPlayer corresponding to the media player in class*/
     public int Load(@RawRes int rawID, MediaPlayer.OnPreparedListener listener){

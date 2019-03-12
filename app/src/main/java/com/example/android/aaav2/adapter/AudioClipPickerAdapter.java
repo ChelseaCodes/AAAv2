@@ -39,7 +39,6 @@ public class AudioClipPickerAdapter extends FragmentStatePagerAdapter {
                 return AudioCategoryFragment.newInstance("Waves", "");
             case 5:
                 return AudioCategoryFragment.newInstance("Meditation", "");
-
             //case 6:
                 //return AudioCategoryFragment.newInstance("My Uploads", "");
             default:
@@ -49,7 +48,7 @@ public class AudioClipPickerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return 2;
+        return 4;
     }
 
     @Nullable

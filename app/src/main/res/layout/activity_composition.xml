@@ -8,20 +8,6 @@
     android:id="@+id/cl_coordinator_layout"
     >
 
-    <!--<fragment-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="575dp"-->
-        <!--android:id="@+id/category_fragment"-->
-        <!--android:name="com.example.android.aaav2.CategoryViewPagerFragment"-->
-        <!--android:layout_gravity="top"-->
-        <!--/>-->
-
-    <!--todo: hopefully anchoring to nav bottom bar won't cause weird behaviour-->
-    <!--<FrameLayout-->
-        <!--android:id="@+id/fl_category_fragment_placeholder"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="550dp" />-->
-
     <androidx.viewpager.widget.ViewPager android:layout_width="match_parent"
         android:layout_height="match_parent"
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -44,12 +30,10 @@
         android:layout_gravity="bottom"
         android:backgroundTint="@color/colorPrimary"
         app:fabCradleRoundedCornerRadius="16dp"
-        app:navigationIcon="@drawable/ic_add_black_24dp"
         android:visibility="visible"
         app:layout_anchor="@id/vp_audio_clip_view_pager"
         app:layout_anchorGravity="bottom"
         >
-
     </com.google.android.material.bottomappbar.BottomAppBar>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

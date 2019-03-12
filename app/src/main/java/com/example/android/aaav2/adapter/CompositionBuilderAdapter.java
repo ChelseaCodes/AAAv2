@@ -10,9 +10,17 @@ import android.widget.SeekBar;
 
 import com.example.android.aaav2.R;
 import com.example.android.aaav2.model.AudioClip;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+
+import javax.annotation.Nullable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,26 +39,19 @@ import static com.example.android.aaav2.CompositionActivity.PLAYBACK_PLAY;
  *
  * The FirestorePagingAdapter binds a Query to a RecyclerView by loading documents in pages.
  * */
-public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip, CompositionBuilderAdapter.ViewHolder> {
+public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioClip, CompositionBuilderAdapter.ViewHolder> {
     /**
      * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
      * FirestoreRecyclerOptions} for configuration options.
      *
      * @param options
      */
-    public CompositionBuilderAdapter(@NonNull FirestorePagingOptions<AudioClip> options, OnAudioClipSelectedListener listener
+    public CompositionBuilderAdapter(@NonNull FirestoreRecyclerOptions<AudioClip> options, OnAudioClipSelectedListener listener
     , OnVolumeChangedListener volListener) {
         super(options);
         mListener = listener;
         mVolumeChangedListener = volListener;
     }
-    //
-//    public CompositionBuilderAdapter(Query query, OnAudioClipSelectedListener listener,
-//                                     OnVolumeChangedListener volumeChangedListener){
-//        super(query);
-//        mListener = listener;
-//        mVolumeChangedListener = volumeChangedListener;
-//    }
 
     //adapterPos used to find clip in SoundPool
     public interface OnAudioClipSelectedListener{
@@ -64,12 +65,6 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
     private OnAudioClipSelectedListener mListener;
     private OnVolumeChangedListener mVolumeChangedListener;
 
-    @Override
-    public void onViewRecycled(@NonNull ViewHolder holder) {
-        super.onViewRecycled(holder);
-        //release mediasource
-    }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -78,7 +73,12 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
         return new ViewHolder(audioView);
     }
 
-//    @Override
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+    }
+
+    //    @Override
 //    public void onBindViewHolder(ViewHolder holder, int position) {
 //        //holder.bind(getSnapshot(position), mListener);
 //        //gets DocumentSnapshot and sends to ViewHolder to set up
@@ -88,7 +88,7 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
 
     @Override
     protected void onBindViewHolder(@NonNull ViewHolder viewHolder, int i, @NonNull AudioClip audioClip) {
-        viewHolder.bind(i, audioClip, mListener, mVolumeChangedListener);
+                viewHolder.bind(i, audioClip, mListener, mVolumeChangedListener);
     }
 
     /*A ViewHolder describes an item view and metadata about its place within the RecyclerView.
@@ -96,9 +96,9 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
     *
     * ViewHolder will get a snapshot of an audio clip to bind to
     * */
-    static class ViewHolder extends RecyclerView.ViewHolder{
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private String TAG = "ViewHolder";
+        private static final String TAG = "PickClipViewHolder";
 
         @BindView(R.id.cb_audio_clip)
         CheckBox audioCheckBox;
@@ -107,6 +107,7 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
         SeekBar audioVolumeBar;
 
         AudioClip mClip;
+
         public ViewHolder(View itemView) {
             super(itemView);
 
@@ -115,26 +116,24 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
 
         public void bind(int position, AudioClip ac, final OnAudioClipSelectedListener listener,
                          final OnVolumeChangedListener volumeListener) {
-            Log.d(TAG, "Binding");
+            Log.d(TAG, "Binding " + ac.getTitle());
 
-            AudioClip clip = new AudioClip();
-
-            clip.setDocumentID(ac.getDocumentID());
-            clip.setCategory(ac.getCategory());
-            //clip.setEmoji(snapshot.get("emoji").toString());
-            clip.setFile_Name(ac.getFile_Name());
-            clip.setTitle(ac.getTitle());
-            clip.setVolume(ac.getVolume());
-
-            mClip = clip;
-
-            setIcon();
-            Resources resources = itemView.getResources();
-
+            mClip = ac;
 
             //default seekbar range is 0-100 volume accepts 0 - 1
-            audioVolumeBar.setProgress(100);
-            audioVolumeBar.setVisibility(INVISIBLE);
+            int volume = Math.round(Float.parseFloat(ac.getVolume()) * 100.0f);
+            audioVolumeBar.setProgress(volume);
+
+            if (ac.isSelected()) {
+                audioCheckBox.setChecked(true);
+                audioVolumeBar.setVisibility(VISIBLE);
+            } else {
+                audioCheckBox.setChecked(false);
+                audioVolumeBar.setVisibility(INVISIBLE);
+            }
+
+            setIcon(ac.getTitle());
+            Resources resources = itemView.getResources();
 
             audioVolumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
@@ -142,6 +141,7 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
                     //default seekbar range is 0-100 volume accepts 0 - 1
                     float volume = progress * 0.01f;
                     if(volumeListener != null){
+
                         volumeListener.onVolumeChangedListener(mClip, volume, getAdapterPosition());
                     }
                 }
@@ -186,9 +186,8 @@ public class CompositionBuilderAdapter extends FirestorePagingAdapter<AudioClip,
         * made for each audio clip item and it will have to be set by adding to this ifelse chain.
         * It's cancerous. I know. I don't know what else to do at the moment so this is how it is.
         * */
-        private void setIcon(){
+        private void setIcon(String title){
             //todo: can set up string based case stmnt
-            String title = mClip.getTitle();
 
             switch(title){
                 case "Gusty":

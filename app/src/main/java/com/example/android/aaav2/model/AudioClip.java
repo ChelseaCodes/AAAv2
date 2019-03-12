@@ -1,28 +1,49 @@
 package com.example.android.aaav2.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
-public class AudioClip {
+public class AudioClip implements Parcelable {
     private String documentID;
+    private String compositionID;
+    private String userID;
     private String category;
     private String title;
     private String volume;
-    private String emoji;
     private String file_name;
-    private int _StreamingID;
-    private int _SoundPoolID;
+    private boolean selected;
 
-    public AudioClip(String mClipID, String mCategory, String mTitle, String mVolume, String mEmoji, String mFileName) {
-        this.documentID = mClipID;
-        this.category = mCategory;
-        this.title = mTitle;
-        this.volume = mVolume;
-        this.emoji = mEmoji;
-        this.file_name = mFileName;
-    }
 
     public AudioClip(){}; //needed for Firebase auto mapping
+
+    public AudioClip(Parcel in){
+        documentID = in.readString();
+        compositionID = in.readString();
+        category = in.readString();
+        title = in.readString();
+        volume = in.readString();
+        file_name = in.readString();
+        //selected = in.readBooleanArray();
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
 
     public String getDocumentID() {
         return documentID;
@@ -56,14 +77,6 @@ public class AudioClip {
         this.volume = mVolume;
     }
 
-    public String getEmoji() {
-        return emoji;
-    }
-
-    public void setEmoji(String mEmoji) {
-        this.emoji = mEmoji;
-    }
-
     public String getFile_Name() {
         return file_name;
     }
@@ -72,20 +85,40 @@ public class AudioClip {
         this.file_name = file_name;
     }
 
-    public int getStreamingID() {
-        return _StreamingID;
+
+    public String getCompositionID() {
+        return compositionID;
     }
 
-    public void setStreamingID(int _StreamingID) {
-        this._StreamingID = _StreamingID;
+    public void setCompositionID(String compositionID) {
+        this.compositionID = compositionID;
     }
 
-    public int get_SoundPoolID() {
-        return _SoundPoolID;
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public void set_SoundPoolID(int _SoundPoolID) {
-        this._SoundPoolID = _SoundPoolID;
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(documentID);
+        dest.writeString(compositionID);
+        dest.writeString(category);
+        dest.writeString(title);
+        dest.writeString(volume);
+        dest.writeString(file_name);
     }
+
+    public static final Creator<AudioClip> CREATOR = new Creator<AudioClip>() {
+        @Override
+        public AudioClip createFromParcel(Parcel source) {
+            return new AudioClip(source);
+        }
+
+        @Override
+        public AudioClip[] newArray(int size) {
+            return new AudioClip[size];
+        }
+    };
 }
 

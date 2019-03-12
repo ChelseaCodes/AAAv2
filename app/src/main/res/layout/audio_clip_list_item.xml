@@ -32,7 +32,8 @@
             android:progressBackgroundTint="@color/colorPrimary"
             android:thumbTint="@color/colorIconAccent"
             android:layout_marginBottom="5dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:visibility="invisible"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </com.google.android.material.card.MaterialCardView>

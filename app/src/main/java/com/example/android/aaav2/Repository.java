@@ -5,14 +5,19 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.example.android.aaav2.model.AudioClip;
+import com.example.android.aaav2.model.AudioComposition;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -21,7 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
@@ -41,11 +48,16 @@ public class Repository {
 
     private FirebaseFirestore mFirestore;
     private CollectionReference audioClipsRef;
+    private CollectionReference audioCompositionsRef;
 
     private FirebaseStorage mStorage;
     private File mStorageDirectory;
     private FileHelper fileHelper;
     private StorageReference audioClipsRawRef;
+    private static String mUserID;
+
+    //data needed for compositions
+    private MutableLiveData<ArrayList<AudioComposition>> mAudioCompositions;
 
     //todo: have allaudioclips be a list of lists of audio clips and add each categorylist to it
     private ArrayList<List<AudioClip>> ALLCLIPS;
@@ -57,29 +69,58 @@ public class Repository {
     private MutableLiveData<List<AudioClip>> mFireClips;
     private MutableLiveData<List<AudioClip>> mCityClips;
     private MutableLiveData<List<AudioClip>> mUserClips;
+
+    private MutableLiveData<AudioComposition> mAudioComposition;
+
     public int Num_Clips = 0;
     public int mNumber_clips_left_to_dl;
 
-    private FirestoreCallback listener;
-    //private WaterWeatherDownloadedListener waterWeatherDownloadedListener;
+    private OnDataLoadedListener onDataLoadedListener;
+    private OnAudioCompositionRetrievedListener onAudioCompositionRetrievedListener;
+    private OnAudioCompositionSavedListener onAudioCompositionSavedListener;
 
-    public interface FirestoreCallback{
+    public interface OnDataLoadedListener {
         void onDataLoaded(ArrayList<List<AudioClip>> list);
     }
-    public interface DataDownloadedListener{
+    public interface OnDataDownloadedListener {
         void onDataDownloaded(AudioClip clip);
     }
-    public interface WaterWeatherDownloadedListener{
-        void onWaterWeatherDownloaded(List<AudioClip> list);
+    public interface OnAudioCompositionRetrievedListener{
+        void onAudioCompositionRetrieved(MutableLiveData<AudioComposition> ac);
+    }
+    public interface OnAudioCompositionSavedListener{
+        void onAudioCompositionSavedListener();
     }
 
-    public Repository(Application app, FirestoreCallback L, File storageDirectory){
+    public Repository(Application app, OnDataLoadedListener L, File storageDirectory){
+        init();
+        onDataLoadedListener = L;
+        mStorageDirectory = storageDirectory;
+        fileHelper = new FileHelper(app.getApplicationContext());
+        mUserID = FirebaseAuth.getInstance().getUid();
+    }
+
+    //called from dialog fragment
+    public Repository(Application app){
+        mAudioComposition = new MutableLiveData<>();
+        init();
+        fileHelper = new FileHelper(app.getApplicationContext());
+    }
+
+    private void init(){
         mFirestore = FirebaseFirestore.getInstance();
         mStorage = FirebaseStorage.getInstance();
-        fileHelper = new FileHelper(app.getApplicationContext());
+
         //reference to noSQL database
         audioClipsRef = mFirestore.collection("audio_clips");
+        audioCompositionsRef = mFirestore.collection("compositions");
 
+        //ref to Storage - where clip data is stored in the cloud
+        audioClipsRawRef = mStorage.getReference().child("audio");
+        mNumber_clips_left_to_dl = 0;
+    }
+
+    public void ReadAllClips(){
         ALLCLIPS = new ArrayList<>();
         mAllAudioClips = new MutableLiveData<>();
         mCategories = new MutableLiveData<>();
@@ -90,17 +131,7 @@ public class Repository {
         mCityClips = new MutableLiveData<>();
         mUserClips = new MutableLiveData<>();
 
-        listener = L;
-        mStorageDirectory = storageDirectory;
-
-        //ref to Storage - where clip data is stored in the cloud
-        audioClipsRawRef = mStorage.getReference().child("audio");
-        mNumber_clips_left_to_dl = 0;
-
         readAllAudioClip();
-        //readAllAudioClipsByCategory();
-
-
     }
 
     public MutableLiveData<List<String>> getCategories() {
@@ -137,10 +168,6 @@ public class Repository {
         return Num_Clips;
     }
 
-    //minimize queries. I will load by category and just add to this list too. by the end it'll
-    //be all audio clips anyways.
-
-
     private void readAllAudioClip(){
         //gets all audio clips and filters/adds to category lists
         audioClipsRef
@@ -151,26 +178,24 @@ public class Repository {
                         if(task.isSuccessful()){
                             ArrayList<AudioClip> mAllAudioClipsList = new ArrayList<>();
 
-                            ArrayList<AudioClip> mWaterWeatherClipsList = new ArrayList<>();
-                            ArrayList<AudioClip> mAnimalCritterClipsList = new ArrayList<>();
-//                            ArrayList<AudioClip> mWaves = new ArrayList<>();
-//                            ArrayList<AudioClip> mFire = new ArrayList<>();
+                            ArrayList<AudioClip> mWaterWeather = new ArrayList<>();
+                            ArrayList<AudioClip> mAnimalCritter = new ArrayList<>();
+                            ArrayList<AudioClip> mWaves = new ArrayList<>();
+                            ArrayList<AudioClip> mFire = new ArrayList<>();
+                            ArrayList<AudioClip> mCity = new ArrayList<>();
+
 //                            ArrayList<AudioClip> mUserUpload = new ArrayList<>();
                             ArrayList<String> categories = new ArrayList<>();
-
                             //for every snapshot in the task returned create audio clip
                             for(QueryDocumentSnapshot doc : task.getResult()){
                                 Num_Clips += 1;
                                 AudioClip clip = new AudioClip();
 
-                                clip.setDocumentID(doc.getId());
+                                clip.setUserID(mUserID);
                                 clip.setTitle(doc.get("title").toString());
                                 clip.setCategory(doc.get("category").toString());
-                                //clip.setEmoji(doc.get("emoji").toString());
                                 clip.setFile_Name(doc.get("file_name").toString());
-                                clip.setVolume("1.0");
-
-                                //mAllAudioClipsList.add(clip);
+                                clip.setVolume("1");
 
                                 //collect list of all categories will use to create tabs
                                 if(!categories.contains(clip.getCategory())){
@@ -180,18 +205,28 @@ public class Repository {
                                 //add clip by category to each category list
                                 switch(clip.getCategory()){
                                     case "Water & Weather":
-                                        mWaterWeatherClipsList.add(clip);
+                                        mWaterWeather.add(clip);
+                                        break;
                                     case "Animals & Critters":
-                                        mAnimalCritterClipsList.add(clip);
+                                        mAnimalCritter.add(clip);
+                                        break;
                                     case "Waves":
-                                        //mWaves.add(clip);
+                                        mWaves.add(clip);
+                                        break;
                                     case "Fire":
-                                        //mFire.add(clip);
+                                        mFire.add(clip);
+                                        break;
+                                    case "City":
+                                        mCity.add(clip);
+                                        break;
                                     case "User Uploaded":
                                         //mUserUpload.add(clip);
+                                        break;
                                     default:
                                         //nothing
+                                        break;
                                 }
+                                mAllAudioClipsList.add(clip);
 
                                 //if(fileHelper.copyAssetToStorage(clip.getFileName())){
 //                                    File f = fileHelper.getFile(clip.getFileName());
@@ -204,18 +239,23 @@ public class Repository {
                             }
 
                             //mAllAudioClips.postValue(mAllAudioClipsList);
-                            mWaterWeatherClips.postValue(mWaterWeatherClipsList);
-//                            mAnimalsCrittersClips.postValue(mAnimalCritterClipsList);
-//                            mWavesClips.postValue(mWaves);
-//                            mFireClips.postValue(mFire);
+                            mWaterWeatherClips.postValue(mWaterWeather);
+                            mAnimalsCrittersClips.postValue(mAnimalCritter);
+                            mWavesClips.postValue(mWaves);
+                            mFireClips.postValue(mFire);
+                            mCityClips.postValue(mCity);
 //                            mUserClips.postValue(mUserUpload);
                             mCategories.postValue(categories);
-                            //todo: update and add other clips to said list
-                            ALLCLIPS.add(mWaterWeatherClipsList);
-                            ALLCLIPS.add(mAnimalCritterClipsList);
-
+                            //todo: update user uploaded
+                            ALLCLIPS.add(mWaterWeather);
+                            ALLCLIPS.add(mAnimalCritter);
+                            ALLCLIPS.add(mWaves);
+                            ALLCLIPS.add(mFire);
+                            ALLCLIPS.add(mCity);
+                            //ALLCLIPS.add(mUserUploaded);
                             if(mNumber_clips_left_to_dl == 0){
-                                listener.onDataLoaded(ALLCLIPS);
+                                initWIP(mAllAudioClipsList);
+                                onDataLoadedListener.onDataLoaded(ALLCLIPS);
                             }
                         }
                         else{
@@ -225,10 +265,222 @@ public class Repository {
                 });
     }
 
+    /*
+     *   Because Firestore doesn't allow subcollections, and bc my Firestore requires
+     *   that the audio_clip collection is only read, not modified, and bc
+     *   the FirebasePagerAdapter loads from my audio_clip collection, when new views
+     *   are made, nothing is set and volume bars dissapear. it reads fresh data each time.
+     *   I need to track the volume and what tacks the user has selected IN THE VIEW
+     *   not just backend wise.
+     *
+     *   This function queries for all audio clips, and creates a NEW document under the
+     *   wip (work in progress) collection. This way users wont be modifying the same data set
+     *   and they get their own.
+     * */
+    private void initWIP(final ArrayList<AudioClip> clips){
+        WriteBatch batch = mFirestore.batch();
+
+        for(AudioClip c : clips){
+            //create empty document with auto id in
+            DocumentReference ref = mFirestore.collection("wip").document();
+
+            Map<String, Object> firestore_clip = new HashMap<>();
+
+            firestore_clip.put("title", c.getTitle());
+            firestore_clip.put("category", c.getCategory());
+            firestore_clip.put("volume", c.getVolume());
+            firestore_clip.put("file_name", c.getFile_Name());
+            firestore_clip.put("userID", mUserID); //userID makes clip queryable from RV
+            firestore_clip.put("documentID", ref.getId());
+            firestore_clip.put("selected", false);
+
+            //one document per ac. query by documentID and category
+            //which will give me an easy list of snapshots.
+            //I'm doing this bc Firestore doesn't support querying nested
+            //Subcollections or lists/maps.
+            //this removes the need to store a documentID referenceing a whole audio comp.
+            //whe whole audio comp will be put together at the end, querying the wip collection
+            batch.set(ref, firestore_clip);
+        }
+
+        batch.commit().addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "Failed to create work in progress ");
+            }
+        });
+    }
+
+    public void RemoveUserWIP(){
+        removeUserWIP();
+    }
+
+    private void removeUserWIP(){
+        final WriteBatch batch = mFirestore.batch();
+
+       Query query = mFirestore.collection("wip")
+                .whereEqualTo("userID", mUserID);
+
+       query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+           @Override
+           public void onComplete(@NonNull Task<QuerySnapshot> task) {
+               if(task.isSuccessful()) {
+
+                   for (QueryDocumentSnapshot doc : task.getResult()) {
+                       batch.delete(doc.getReference());
+                   }
+
+                   batch.commit().addOnFailureListener(new OnFailureListener() {
+                       @Override
+                       public void onFailure(@NonNull Exception e) {
+                           Log.d(TAG, "Failed to purge WIP collection");
+                       }
+                   });
+               }
+               else
+                   Log.d(TAG, "Found no documents to purge");
+           }
+       });
+    }
+    //WorkInProgress state of AudioCompositions
+    public MutableLiveData<AudioComposition> GetUserWIP(){
+        if(mAudioComposition.getValue() == null){
+            AudioComposition c = new AudioComposition();
+            c.setUserId(mUserID);
+            Log.d(TAG, "posting mutable composition");
+            mAudioComposition.setValue(c);
+        }
+        return getUserWIP();}
+
+    private MutableLiveData<AudioComposition> getUserWIP(){
+        //if(mAudioComposition.getValue() == null) {
+            Log.d(TAG, "Repo creating AudioComposition");
+
+
+                Query query = mFirestore.collection("wip")
+                        .whereEqualTo("userID", mUserID)
+                        .whereEqualTo("selected", true);
+
+                query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot doc : task.getResult()) {
+                                AudioClip c = doc.toObject(AudioClip.class); //hopefully works
+
+                                if(mAudioComposition.getValue() != null)
+                                     mAudioComposition.getValue().addAudioClip(c);
+                                else
+                                    Log.d(TAG, "Composition not posted");
+                            }
+
+                            //firelistener that composition is ready
+                            if(onAudioCompositionRetrievedListener != null)
+                                onAudioCompositionRetrievedListener
+                                        .onAudioCompositionRetrieved(mAudioComposition);
+                        } else
+                            Log.d(TAG, "Failed to get WIP collection");
+                    }
+                });
+       // }
+
+        //Log.d(TAG, "AudioComposition not null");
+        return mAudioComposition;
+    }
+
+//    private MutableLiveData<AudioComposition> createAudioComposition(){
+//        //use AudioComposition POJO and populate with rudimentary data
+//        AudioComposition c = new AudioComposition();
+//        c.setUserId(mUserID);
+//
+//        audioCompositionsRef.add(c).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//            @Override
+//            public void onSuccess(DocumentReference documentReference) {
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Log.w(TAG, "Error adding document", e);
+//            }
+//        });
+//
+//    }
+
+    //update audio composition as a whole
+    public void UpdateUserCompositionWIP(ArrayList<AudioClip> clips){
+        updateUserCompositionWIP(clips);
+    }
+    private void updateUserCompositionWIP(ArrayList<AudioClip> clips){
+        for(AudioClip c : clips){
+            updateClipWIP(c);
+        }
+    }
+
+    //update audio clip in wip collection for audio composition
+    public void UpdateClip(AudioClip c){
+        updateClipWIP(c);
+    }
+    private void updateClipWIP(AudioClip c){
+        //grab wip document for clip and update volume and selected.
+        mFirestore.collection("wip")
+                .document(c.getDocumentID())
+                .update("volume", c.getVolume());
+
+        mFirestore.collection("wip")
+                .document(c.getDocumentID())
+                .update("selected", c.isSelected());
+    }
+
+    public void SaveAudioComposition(AudioComposition ac){
+        saveAudioComposition(ac);
+    }
+    private void saveAudioComposition(AudioComposition ac){
+        Map<String, Object> docData = new HashMap<>();
+        Log.d(TAG, "Saving composition to firestore");
+
+        ArrayList<AudioClip> clips = mAudioComposition.getValue().getAudioClips();
+        ArrayList<String> titles = new ArrayList<>();
+        ArrayList<String> volumes = new ArrayList<>();
+        ArrayList<String> filenames = new ArrayList<>();
+
+        for(AudioClip c : clips){
+            titles.add(c.getTitle());
+            volumes.add(c.getVolume());
+            filenames.add(c.getFile_Name());
+        }
+
+        docData.put("userID", mUserID);
+        docData.put("title", ac.getCompositionTitle());
+        docData.put("length",String.valueOf(ac.getLength()));
+        docData.put("tags", ac.getTags());
+        docData.put("ac_titles", titles);
+        docData.put("ac_volumes", volumes);
+        docData.put("ac_filenames", filenames);
+
+        mFirestore.collection("compositions").add(docData).addOnCompleteListener(
+                new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                            Log.d(TAG, "Saved composition to firestore");
+                            if(onAudioCompositionSavedListener != null)
+                                onAudioCompositionSavedListener.onAudioCompositionSavedListener();
+                    }
+                }
+        );
+
+    }
+
+    public void setOnAudioCompositionRetrievedListener(OnAudioCompositionRetrievedListener listener){
+        onAudioCompositionRetrievedListener = listener;
+    }
+
+    public void setOnAudioCompositionSavedListener(OnAudioCompositionSavedListener listener){
+        onAudioCompositionSavedListener = listener;
+    }
+
     private void readAllAudioClipsByCategory(){
         readWaterWeather();
     }
-
     private void readWaterWeather(){
        audioClipsRef.whereEqualTo("category", "Water & Weather")
                .get()
@@ -270,7 +522,6 @@ public class Repository {
                });
     }
 //    private void readAnimalCritter{}
-//
 //    private void readWaves{}
 //    private void readFire{}
 //    private void readCity{}
@@ -282,18 +533,18 @@ public class Repository {
         clip.getBytes(DEFAULT_BUFFER_SIZE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
-               new DownloadAudioAsync(clip_dl, bytes, mStorageDirectory, new DataDownloadedListener() {
+               new DownloadAudioAsync(clip_dl, bytes, mStorageDirectory, new OnDataDownloadedListener() {
                    @Override
                    public void onDataDownloaded(AudioClip clip) {
                        Log.d(TAG, clip.getTitle() + " Has been Downloaded");
                        if(mNumber_clips_left_to_dl != 0){
                            mNumber_clips_left_to_dl -= 1;
                            if(mNumber_clips_left_to_dl == 0){
-                               listener.onDataLoaded(ALLCLIPS);
+                               onDataLoadedListener.onDataLoaded(ALLCLIPS);
                            }
                        }
                        else
-                           listener.onDataLoaded(ALLCLIPS);
+                           onDataLoadedListener.onDataLoaded(ALLCLIPS);
                    }
                }).execute();
             }
@@ -309,12 +560,12 @@ public class Repository {
         String TAG = "DownloadAudioAsync";
         private AudioClip mClip;
         private byte[] mBytes;
-        private DataDownloadedListener mListener;
+        private OnDataDownloadedListener onDataDownloadedListener;
         private File mStorageDirectory;
 
         public DownloadAudioAsync(AudioClip clip, byte [] bytes
-                , File storageDir, DataDownloadedListener listener){
-            mListener = listener;
+                , File storageDir, OnDataDownloadedListener listener){
+            onDataDownloadedListener = listener;
             mBytes = bytes;
             mClip = clip;
             mStorageDirectory = storageDir;
@@ -357,7 +608,7 @@ public class Repository {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            mListener.onDataDownloaded(mClip);
+            onDataDownloadedListener.onDataDownloaded(mClip);
         }
     }
 }
