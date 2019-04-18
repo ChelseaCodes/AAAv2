@@ -1,59 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/colorBackground">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <!--<androidx.appcompat.widget.LinearLayoutCompat-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content">-->
 
-        <!--<androidx.appcompat.widget.LinearLayoutCompat-->
+        <!--<TextView-->
+            <!--android:id="@+id/tv_userName"-->
             <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content">-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Hello Stranger"-->
+            <!--/>-->
 
-            <!--<TextView-->
-                <!--android:id="@+id/tv_userName"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="Hello Stranger"-->
-                <!--/>-->
-
-        <!--</androidx.appcompat.widget.LinearLayoutCompat>-->
+    <!--</androidx.appcompat.widget.LinearLayoutCompat>-->
 
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_user_compositions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            xmlns:android="http://schemas.android.com/apk/res/android">
-        </androidx.recyclerview.widget.RecyclerView>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_user_compositions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    </androidx.recyclerview.widget.RecyclerView>
 
-        <!-- Other components and views -->
+    <!-- Other components and views -->
 
 
-        <com.google.android.material.bottomappbar.BottomAppBar
-            android:id="@+id/navigation"
-            style="@style/Widget.MaterialComponents.BottomAppBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            app:navigationIcon="@drawable/ic_person_black_24dp"
-            android:backgroundTint="@color/colorPrimary"
-            app:fabCradleRoundedCornerRadius="16dp"
-            />
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/navigation"
+        style="@style/Widget.MaterialComponents.BottomAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:navigationIcon="@drawable/ic_person_black_24dp"
+        android:backgroundTint="@color/colorPrimary"
+        app:fabCradleRoundedCornerRadius="16dp"
+        />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            android:onClick="launchCompositionActivity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_add_black_24dp"
-            app:layout_anchor="@id/navigation" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:onClick="launchCompositionActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add_black_24dp"
+        app:layout_anchor="@id/navigation" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-</androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

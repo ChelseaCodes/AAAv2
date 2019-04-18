@@ -18,7 +18,6 @@ import androidx.lifecycle.MutableLiveData;
 * */
 public class EditCompositionViewModel extends AndroidViewModel implements Repository.OnAudioCompositionRetrievedListener
 {
-
     public static final String TAG = "EditCompositionViewModel";
 
     //CompositionViewModel to talk to MediaPlayerPool instance and
@@ -44,7 +43,6 @@ public class EditCompositionViewModel extends AndroidViewModel implements Reposi
         mAudioComposition = new MutableLiveData<>();
         sourceOfTruth = new Repository(app);
         sourceOfTruth.setOnAudioCompositionRetrievedListener(this);
-
     }
 
     public MutableLiveData<AudioComposition> getAudioComposition(){
@@ -82,5 +80,4 @@ public class EditCompositionViewModel extends AndroidViewModel implements Reposi
     public void SaveComposition(AudioComposition ac){
         sourceOfTruth.SaveAudioComposition(ac);
     }
-
 }

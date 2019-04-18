@@ -1,6 +1,10 @@
 package com.example.android.aaav2;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
@@ -27,6 +31,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import android.service.media.MediaBrowserService;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,19 +42,27 @@ import android.widget.TextView;
 
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements UserCompositionsAdapter.OnCompositionClickedListener {
     private static final int RC_SIGN_IN = 123;
 
     private String TAG = "MainActivity";
 
     private FirebaseFirestore mFirestore;
     private RecyclerView.LayoutManager mLayoutManager;
+    private UserCompositionsAdapter mAdapter;
 
     @BindView(R.id.fab)
     FloatingActionButton launchCompositionActivity;
 
     @BindView(R.id.rv_user_compositions)
     RecyclerView recyclerView;
+
+    @BindView(R.id.navigation)
+    BottomAppBar navigation;
+
+    private MediaBrowserHelper mMediaBrowserHelper;
+
+    private boolean mIsPlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         *
         * */
 
-        BottomAppBar navigation = findViewById(R.id.navigation);
+        //BottomAppBar navigation = findViewById(R.id.navigation);
         setSupportActionBar(navigation);
 
         launchCompositionActivity = findViewById(R.id.fab);
@@ -84,14 +99,21 @@ public class MainActivity extends AppCompatActivity {
         // Start sign in if necessary
         if (shouldStartSignIn()) {
             startSignIn();
-            return;
         }
 
         initRecyclerView();
+
+        mMediaBrowserHelper = new MediaBrowserHelper(this, MediaPlaybackService.class );
+
+
+        //mMediaBrowserHelper.registerCallback(new MediaControllerCompat.Callback() {
+        //});
     }
 
     void initRecyclerView(){
+
         final String uid = FirebaseAuth.getInstance().getUid();
+        Log.d(TAG, "Init RV Main Activity UID: " + uid);
 
         Query mQuery = FirebaseFirestore.getInstance().collection("compositions")
                     .whereEqualTo("userID", uid);
@@ -102,23 +124,25 @@ public class MainActivity extends AppCompatActivity {
                     @NonNull
                     @Override
                     public AudioComposition parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                       Log.d("PARSESNAPSHOT", " parsing AudioComp Found");
                         AudioComposition c = new AudioComposition();
 
                         c.setCompositionTitle(snapshot.get("title").toString());
                         c.setLength(Double.valueOf(snapshot.get("length").toString()));
                         c.setUserId(uid);
 
-                        return null;
+                        return c;
                     }
                 })
                 .build();
 
-        UserCompositionsAdapter mAdapter = new UserCompositionsAdapter(options);
+        mAdapter = new UserCompositionsAdapter(options, this);
 
-        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager = new LinearLayoutManager(getParent());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setAdapter(mAdapter);
 
+        mAdapter.startListening();
     }
     /*
      * This uses Firebase's API to log in users with their own
@@ -145,6 +169,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mMediaBrowserHelper.onStart();
+    }
+
     public void launchCompositionActivity(View view) {
         Log.d(TAG, "launching Composition Activity");
 
@@ -152,4 +183,13 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
 
     }
+
+    @Override
+    public void onCompositionClickedListener(AudioComposition ac) {
+
+    }
+
+
+
+
 }

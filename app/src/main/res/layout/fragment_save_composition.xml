@@ -76,7 +76,9 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:maxLines="1"
-                android:lines="1" />
+                android:lines="1"
+                app:errorEnabled="true"
+                />
 
         </com.google.android.material.textfield.TextInputLayout>
 

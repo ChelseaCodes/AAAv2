@@ -16,6 +16,7 @@ import com.example.android.aaav2.viewmodel.CompositionBuilderViewModel;
 import com.example.android.aaav2.viewmodel.EditCompositionViewModel;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -162,16 +163,16 @@ public class SaveWIPDialogFragment extends DialogFragment implements SaveComposi
 
 
         //grab duration
-        if(playbackInput.getText() != null){
-            mAudioComposition.getValue().setLength(Double.valueOf(playbackInput.getText().toString()));
+
+        try {
+            if(playbackInput.getText() != null){
+                mAudioComposition.getValue().setLength(Double.valueOf(playbackInput.getText().toString()));
+                mEditViewModel.SaveComposition(mAudioComposition.getValue());
+            }
+        } catch (NumberFormatException e) {
+            playbackInput.setError("Please set a play time");
         }
-        else
-            Log.d(TAG, "error saving duration");
-
-
-
-        mEditViewModel.SaveComposition(mAudioComposition.getValue());
-    }
+}
 
     @Override
     public void onResume() {

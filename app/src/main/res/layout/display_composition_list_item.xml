@@ -6,7 +6,7 @@
     android:layout_marginLeft="@dimen/mtrl_card_spacing"
     android:layout_marginTop="@dimen/mtrl_card_spacing"
     android:layout_marginRight="@dimen/mtrl_card_spacing"
-    android:backgroundTint="@color/colorBackground"
+    android:backgroundTint="@color/compositionDisplay"
     app:cardCornerRadius="10dp">
 
     <RelativeLayout
@@ -15,34 +15,39 @@
         android:layout_centerVertical="true"
         >
 
+        <ImageButton
+            android:id="@+id/ib_play_pause"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/ic_play_arrow_black_24dp" />
+
         <TextView
             android:id="@+id/tv_composition_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:layout_marginStart="42dp"
+            android:layout_marginTop="2dp"
+            android:fontFamily="monospace"
             android:padding="8dp"
-            android:layout_gravity="start"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="0dp"
-            android:fontFamily="casual"
             android:text="Sample Title"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/tv_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="208dp"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="1dp"
             android:layout_toEndOf="@+id/tv_composition_title"
-            android:fontFamily="casual"
-            android:text="12 mins">
-        </TextView>
+            android:fontFamily="monospace"
+            android:gravity="end"
+            android:padding="8dp"
+            android:textSize="20sp"
+            android:text="12 mins"></TextView>
 
     </RelativeLayout>
 </com.google.android.material.card.MaterialCardView>

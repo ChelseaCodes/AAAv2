@@ -98,7 +98,6 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
     public interface DataDownloadedListener{
          void onDataDownloaded();
     }
-
     /*
     * ViewInit takes the list of AudioClips and sets this->mAllAudioClips
     * Then initiates SoundPool and loads all clips into this->mSoundPool
