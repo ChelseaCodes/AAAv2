@@ -35,19 +35,18 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
     private MutableLiveData<List<AudioClip>> mAllAudioClips;
     private ArrayList<List<AudioClip>> ALLCLIPS;
     private MutableLiveData<List<AudioClip>> mWaterWeatherClips;
-    private MutableLiveData<List<AudioClip>> mAnimalsCrittersClips;
-    private MutableLiveData<List<AudioClip>> mWavesClips;
-    private MutableLiveData<List<AudioClip>> mFireClips;
-    private MutableLiveData<List<AudioClip>> mCityClips;
-    private MutableLiveData<List<AudioClip>> mUserClips;
-
-    private MutableLiveData<List<String>> mCategories;
+//    private MutableLiveData<List<AudioClip>> mAnimalsCrittersClips;
+//    private MutableLiveData<List<AudioClip>> mWavesClips;
+//    private MutableLiveData<List<AudioClip>> mFireClips;
+//    private MutableLiveData<List<AudioClip>> mCityClips;
+//    private MutableLiveData<List<AudioClip>> mUserClips;
+//
+//    private MutableLiveData<List<String>> mCategories;
     private String mUserID;
 
     private MediaPlayerPool mMediaPlayerPool;
 
     private HashMap<String, MediaPlayer> mStreamMap;
-    private FileHelper fileHelper;
 
     private DataDownloadedListener downloadedListener;
     private AudioComposition mComposition;
@@ -71,7 +70,6 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
         }, app.getApplicationContext().getFilesDir() );
         sourceOfTruth.ReadAllClips();
         mAllAudioClips = null;
-        fileHelper = new FileHelper(app.getApplicationContext());
     }
 
     public void RemoveUserWIP(){
@@ -83,12 +81,12 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
         downloadedListener = L;
     }
 
-    public ObservableSnapshotArray<AudioClip> getWaterWeatherSnapshotArray() {
-        if(mWaterWeatherSnapshotArray != null)
-            return mWaterWeatherSnapshotArray;
-        else
-            return null;
-    }
+//    public ObservableSnapshotArray<AudioClip> getWaterWeatherSnapshotArray() {
+//        if(mWaterWeatherSnapshotArray != null)
+//            return mWaterWeatherSnapshotArray;
+//        else
+//            return null;
+//    }
 
     @Override
     public void onPrepared(MediaPlayer mp) {

@@ -10,9 +10,11 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.service.media.MediaBrowserService;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 
 import java.util.List;
 
@@ -33,6 +35,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     //private BecomingNoisyReceiver myNoisyAudioStreamReceiver = new BecomingNoisyReceiver();
 
     private MediaSessionCompat mediaSession;
+    private PlayerAdapter mPlayback;
+    private MediaSessionCallback mCallback;
     private PlaybackStateCompat.Builder stateBuilder;
     private MediaNotificationManager mMediaNotificationManager;
     private AudioFocusRequest audioFocusRequest;
@@ -89,62 +93,53 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
 
     }
+    // MediaSession Callback: Transport Controls -> MediaPlayerAdapter
+    public class MediaSessionCallback extends MediaSessionCompat.Callback {
+        private MediaMetadataCompat mPreparedMedia;
 
-    MediaSessionCompat.Callback callback = new
-            MediaSessionCompat.Callback() {
-                @Override
-                public void onPlay() {
-                    AudioManager am = (AudioManager) getBaseContext().getSystemService(Context.AUDIO_SERVICE);
-                    // Request audio focus for playback, this registers the afChangeListener
-                    AudioAttributes attrs = new AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build();
-                    audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                            .setOnAudioFocusChangeListener(afChangeListener)
-                            .setAudioAttributes(attrs)
-                            .build();
-                    int result = am.requestAudioFocus(audioFocusRequest);
+        @Override
+        public void onPrepare() {
 
-                    if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                        // Start the service
-                        startService(new Intent(getBaseContext(), MediaBrowserService.class));
-                        // Set the session active  (and update metadata and state)
-                        mediaSession.setActive(true);
-                        // start the player (custom call)
-                        //player.start();
-                        // Register BECOME_NOISY BroadcastReceiver
-                        //registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
-                        // Put the service in the foreground, post notification
-                        //startForeground(id, myPlayerNotification);
-                    }
-                }
+//            final String mediaId = mPlaylist.get(mQueueIndex).getDescription().getMediaId();
+//            mPreparedMedia = MusicLibrary.getMetadata(MusicService.this, mediaId);
+//            mediaSession.setMetadata(mPreparedMedia);
+//
+//            if (!mSession.isActive()) {
+//                mSession.setActive(true);
+//            }
 
-                @Override
-                public void onStop() {
-                    AudioManager am = (AudioManager) getBaseContext().getSystemService(Context.AUDIO_SERVICE);
-                    // Abandon audio focus
-                    am.abandonAudioFocusRequest(audioFocusRequest);
-                    //unregisterReceiver(myNoisyAudioStreamReceiver);
-                    // Stop the service
-                    stopSelf();
-                    // Set the session inactive  (and update metadata and state)
-                    mediaSession.setActive(false);
-                    // stop the player (custom call)
-                    //player.stop();
-                    // Take the service out of the foreground
-                    //stopForeground(false);
-                }
+            //mPreparedMedia = the AudioComposition.getMetaData()
+        }
 
-                @Override
-                public void onPause() {
-                    AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                    // Update metadata and state
-                    // pause the player (custom call)
-                    player.pause();
-                    // unregister BECOME_NOISY BroadcastReceiver
-                    unregisterReceiver(myNoisyAudioStreamReceiver);
-                    // Take the service out of the foreground, retain the notification
-                    service.stopForeground(false);
-                }
-            };
+        @Override
+        public void onPlay() {
+            //if (!isReadyToPlay()) {
+                // Nothing to play.
+             //   return;
+            //}
+
+            if (mPreparedMedia == null) {
+                onPrepare();
+            }
+
+            mPlayback.playFromMedia(mPreparedMedia);
+            Log.d(LOG_TAG, "onPlayFromMediaId: MediaSession active");
+        }
+
+        @Override
+        public void onPause() {
+            mPlayback.pause();
+        }
+
+        @Override
+        public void onStop() {
+            mPlayback.stop();
+            mediaSession.setActive(false);
+        }
+
+        //private boolean isReadyToPlay() {
+        //    return (!mPlaylist.isEmpty());
+        //}
+    }
+
 }
