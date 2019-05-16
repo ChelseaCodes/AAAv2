@@ -3,51 +3,66 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_marginLeft="@dimen/mtrl_card_spacing"
-    android:layout_marginTop="@dimen/mtrl_card_spacing"
-    android:layout_marginRight="@dimen/mtrl_card_spacing"
-    android:backgroundTint="@color/compositionDisplay"
-    app:cardCornerRadius="10dp">
+    android:layout_marginBottom="@dimen/mtrl_card_spacing"
+    android:layout_marginEnd="@dimen/mtrl_card_spacing"
+    android:layout_marginStart="@dimen/mtrl_card_spacing"
+    app:cardBackgroundColor="@color/compositionDisplay"
+    android:id="@+id/cv_composition"
+    style="@style/AppTheme.CardView"
+    >
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        >
-
-        <ImageButton
-            android:id="@+id/ib_play_pause"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/ic_play_arrow_black_24dp" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="5dp">
 
         <TextView
             android:id="@+id/tv_composition_title"
+            style="@style/AppTheme.TextAppearance.Headline6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="42dp"
-            android:layout_marginTop="2dp"
-            android:fontFamily="monospace"
-            android:padding="8dp"
-            android:text="Sample Title"
-            android:textSize="20sp" />
+            android:gravity="center_vertical"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:paddingTop="5dp"
+            android:text="studying for an evening or two tonight, hope thats okay" />
 
         <TextView
-            android:id="@+id/tv_duration"
+            android:id="@+id/tv_tags"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="2dp"
-            android:layout_marginEnd="1dp"
-            android:layout_toEndOf="@+id/tv_composition_title"
-            android:fontFamily="monospace"
-            android:gravity="end"
-            android:padding="8dp"
-            android:textSize="20sp"
-            android:text="12 mins"></TextView>
+            android:layout_marginStart="19dp"
+            android:layout_marginEnd="12dp"
+            android:paddingBottom="5dp"
+            style="@style/AppTheme.TextAppearance.Subtitle1"
+            android:text="calm ocean filler filler fileer fileer fileler file">
 
-    </RelativeLayout>
+        </TextView>
+
+    </LinearLayout>
+
+
+        <!--<ImageButton-->
+        <!--android:id="@+id/ib_play_pause"-->
+        <!--android:layout_width="50dp"-->
+        <!--android:layout_height="50dp"-->
+        <!--android:background="@drawable/ic_play_arrow_black_24dp" />-->
+
+
+
+        <!--<TextView-->
+        <!--android:id="@+id/tv_duration"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_alignParentEnd="true"-->
+        <!--android:layout_marginTop="2dp"-->
+        <!--android:layout_marginEnd="1dp"-->
+        <!--android:layout_toEndOf="@+id/tv_composition_title"-->
+        <!--android:fontFamily="monospace"-->
+        <!--android:gravity="end"-->
+        <!--android:padding="8dp"-->
+        <!--android:textSize="20sp"-->
+        <!--android:text="12 mins"></TextView>-->
 </com.google.android.material.card.MaterialCardView>

@@ -16,12 +16,9 @@ import com.example.android.aaav2.viewmodel.CompositionBuilderViewModel;
 import com.example.android.aaav2.viewmodel.EditCompositionViewModel;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-
-import java.util.Objects;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.DialogFragment;
@@ -59,8 +56,12 @@ public class SaveWIPDialogFragment extends DialogFragment implements SaveComposi
     @BindView(R.id.ti_et_title)
     TextInputEditText title;
 
-    @BindView(R.id.et_playback_duration)
-    TextInputEditText playbackInput;
+//    @BindView(R.id.et_playback_duration)
+//    TextInputEditText playbackInput;
+
+    @BindView(R.id.et_composition_tags)
+    TextInputEditText compositionTags;
+
 
     @BindView(R.id.ib_save_composition)
     MaterialButton saveButton;
@@ -151,27 +152,42 @@ public class SaveWIPDialogFragment extends DialogFragment implements SaveComposi
     @OnClick(R.id.ib_save_composition)
     public void onClick(View v){
         Log.d(TAG, "ATTEMPTING TO SAVE");
+        boolean ok_save_flag = true;
+        Log.d(TAG, "onClick: '" + title.getText() + "'");
 
-        //grab title
-        if(title.getText() != null){
+        //Ensure user has selected some audio clips before saving
+        //if(mEditViewModel.)
+
+
+        //Title filtering - ensure title is present
+        if(!title.getText().toString().isEmpty()){
             mAudioComposition.getValue().setCompositionTitle(
                     title.getText().toString());
         }
-        else
+        else {
+            title.setError("Please set a title");
             //todo use snackbars
             Log.d(TAG, "Could not save title");
+            ok_save_flag = false;
+        }
+
+
 
 
         //grab duration
-
-        try {
-            if(playbackInput.getText() != null){
-                mAudioComposition.getValue().setLength(Double.valueOf(playbackInput.getText().toString()));
-                mEditViewModel.SaveComposition(mAudioComposition.getValue());
-            }
-        } catch (NumberFormatException e) {
-            playbackInput.setError("Please set a play time");
+        //grab tags
+        //try {
+        if(compositionTags.getText() != null){
+            //mAudioComposition.getValue().setLength(Double.valueOf(playbackInput.getText().toString()));
+            String []tags = compositionTags.getText().toString().split(" ");
+            mAudioComposition.getValue().setTags(tags);
         }
+        //} catch (excep) {
+       //     compositionTags.setError("Please set a play time");
+       // }
+
+        if(ok_save_flag)
+            mEditViewModel.SaveComposition(mAudioComposition.getValue());
 }
 
     @Override
@@ -226,7 +242,6 @@ public class SaveWIPDialogFragment extends DialogFragment implements SaveComposi
         recyclerView.setAdapter(mAdapter);   //should set up everything else.
     }
 
-
     @Override
     public void onAudioClipRemovedListener(AudioClip ac, int adapterPos) {
                 ac.setSelected(false);
@@ -238,7 +253,7 @@ public class SaveWIPDialogFragment extends DialogFragment implements SaveComposi
     public void onVolumeChangedListener(AudioClip ac, int adapterPos, float volume) {
         ac.setVolume(String.valueOf(volume));
 
-        mBuilderViewModel.setAudioVolume(ac, volume);
+        mBuilderViewModel.setAudioPoolVolume(ac, volume);
     }
 
     @Override

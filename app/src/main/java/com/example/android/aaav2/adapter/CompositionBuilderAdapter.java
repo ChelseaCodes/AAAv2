@@ -47,10 +47,11 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
      * @param options
      */
     public CompositionBuilderAdapter(@NonNull FirestoreRecyclerOptions<AudioClip> options, OnAudioClipSelectedListener listener
-    , OnVolumeChangedListener volListener) {
+    , OnVolumeChangedListener volListener, OnVolumeDoneChangingListener doneChangingListener) {
         super(options);
         mListener = listener;
         mVolumeChangedListener = volListener;
+        mVolumeDoneChangingListener = doneChangingListener;
     }
 
     //adapterPos used to find clip in SoundPool
@@ -62,8 +63,13 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
         void onVolumeChangedListener(AudioClip ac, float volume, int adapterPos);
     }
 
+    public interface OnVolumeDoneChangingListener{
+        void onVolumeDoneChangingListener(AudioClip ac, float volume, int adapterPos);
+    }
+
     private OnAudioClipSelectedListener mListener;
     private OnVolumeChangedListener mVolumeChangedListener;
+    private OnVolumeDoneChangingListener mVolumeDoneChangingListener;
 
     @NonNull
     @Override
@@ -88,7 +94,7 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
 
     @Override
     protected void onBindViewHolder(@NonNull ViewHolder viewHolder, int i, @NonNull AudioClip audioClip) {
-                viewHolder.bind(i, audioClip, mListener, mVolumeChangedListener);
+                viewHolder.bind(i, audioClip, mListener, mVolumeChangedListener, mVolumeDoneChangingListener);
     }
 
     /*A ViewHolder describes an item view and metadata about its place within the RecyclerView.
@@ -115,7 +121,7 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
         }
 
         public void bind(int position, AudioClip ac, final OnAudioClipSelectedListener listener,
-                         final OnVolumeChangedListener volumeListener) {
+                         final OnVolumeChangedListener volumeListener, final OnVolumeDoneChangingListener doneChanging) {
             Log.d(TAG, "Binding " + ac.getTitle());
 
             mClip = ac;
@@ -134,6 +140,7 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
 
             setIcon(ac.getTitle());
             Resources resources = itemView.getResources();
+            Log.d(TAG, "bind: " + resources.toString());
 
             audioVolumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
@@ -145,7 +152,6 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
                         volumeListener.onVolumeChangedListener(mClip, volume, getAdapterPosition());
                     }
                 }
-
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {}
 
@@ -156,8 +162,15 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
 //                   if(volumeListener != null){
 //                       volumeListener.onVolumeChangedListener(snapshot, volume, getAdapterPosition());
 //                   }
+
+                    float volume = seekBar.getThumbOffset() * 0.01f;
+                    if(doneChanging!= null){
+                        doneChanging.onVolumeDoneChangingListener(mClip, volume, getAdapterPosition());
+                    }
+
                 }
             });
+
 
             audioCheckBox.setOnClickListener(new View.OnClickListener(){
                @Override
@@ -166,6 +179,7 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
                        //volumebar invisible means not clicked yet
                        if(audioCheckBox.isChecked()){
                            audioCheckBox.setChecked(true);
+                           mClip.setSelected(true);
                            audioVolumeBar.setVisibility(VISIBLE);
 
                            listener.onAudioClipSelected(mClip,PLAYBACK_PLAY, getAdapterPosition());
@@ -173,12 +187,15 @@ public class CompositionBuilderAdapter extends FirestoreRecyclerAdapter<AudioCli
                        else{
                            audioCheckBox.setChecked(false);
                            audioVolumeBar.setVisibility(INVISIBLE);
+                           mClip.setSelected(false);
                            listener.onAudioClipSelected(mClip,PLAYBACK_PAUSE, getAdapterPosition());
                        }
 
                    }
                }
             });
+
+
         }
 
         /*

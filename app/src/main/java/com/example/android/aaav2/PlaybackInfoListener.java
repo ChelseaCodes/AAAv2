@@ -21,7 +21,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 
 
 /**
- * Listener to provide state updates from {MediaPlayerAdapter} (the media player)
+ * Listener to provide state updates from (the media player)
  * to {MusicPlaybackService} (the service that holds our {@link MediaSessionCompat}.
  */
 public abstract class PlaybackInfoListener {

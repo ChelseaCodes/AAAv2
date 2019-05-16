@@ -7,26 +7,64 @@
     tools:context=".MainActivity"
     android:background="@color/colorBackground">
 
-    <!--<androidx.appcompat.widget.LinearLayoutCompat-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:fontFamily="monospace"
+            android:text="Your Audio Compositions"
+            android:textAlignment="center"
+            android:textColor="@color/whiteText"
+            android:padding="5dp"
+            android:textSize="25dp" />
+
+        <!--<androidx.appcompat.widget.LinearLayoutCompat-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="wrap_content">-->
 
         <!--<TextView-->
-            <!--android:id="@+id/tv_userName"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Hello Stranger"-->
-            <!--/>-->
+        <!--android:id="@+id/tv_userName"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Hello Stranger"-->
+        <!--/>-->
 
-    <!--</androidx.appcompat.widget.LinearLayoutCompat>-->
+        <!--</androidx.appcompat.widget.LinearLayoutCompat>-->
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_user_compositions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        xmlns:android="http://schemas.android.com/apk/res/android">
-    </androidx.recyclerview.widget.RecyclerView>
+        <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/rv_user_compositions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/mtrl_card_spacing"
+            android:clipToPadding="false"
+            android:paddingBottom="96dp"></androidx.recyclerview.widget.RecyclerView>
+        <TextView
+            android:id="@+id/tv_no_items_here"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textAlignment="center"
+            android:visibility="gone"
+            android:text="No compositions - YET!"/>
+        <TextView
+            android:id="@+id/tv_no_items_here2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textAlignment="center"
+            android:visibility="gone"
+            android:text="Click the button below to get started"/>
+
+    </LinearLayout>
+
+
 
     <!-- Other components and views -->
 
@@ -41,6 +79,44 @@
         android:backgroundTint="@color/colorPrimary"
         app:fabCradleRoundedCornerRadius="16dp"
         />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="end"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <!--<Chronometer-->
+            <!--android:id="@+id/cm_count_down"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="center_vertical"-->
+            <!--android:countDown="true"-->
+            <!--android:fontFamily="monospace"-->
+
+            <!--android:visibility="visible" />-->
+
+        <ImageButton
+            android:id="@+id/ib_playback_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/ic_stop_black_45dp"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/ib_playback_pause_play"
+            android:background="@drawable/ic_pause_black_45dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="5dp"
+            android:visibility="invisible"/>
+
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

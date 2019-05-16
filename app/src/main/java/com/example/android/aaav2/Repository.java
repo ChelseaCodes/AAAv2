@@ -442,17 +442,21 @@ public class Repository {
         ArrayList<String> titles = new ArrayList<>();
         ArrayList<String> volumes = new ArrayList<>();
         ArrayList<String> filenames = new ArrayList<>();
+        ArrayList<String> tags = new ArrayList<>();
 
         for(AudioClip c : clips){
             titles.add(c.getTitle());
             volumes.add(c.getVolume());
             filenames.add(c.getFile_Name());
         }
+        for(String s: ac.getTags()){
+            tags.add(s);
+        }
 
         docData.put("userID", mUserID);
         docData.put("title", ac.getCompositionTitle());
         docData.put("length",String.valueOf(ac.getLength()));
-        docData.put("tags", ac.getTags());
+        docData.put("tags", tags);
         docData.put("ac_titles", titles);
         docData.put("ac_volumes", volumes);
         docData.put("ac_filenames", filenames);
@@ -468,6 +472,25 @@ public class Repository {
                 }
         );
 
+    }
+
+    //Called from EditCompositionViewModel
+    public void DeleteAudioComposition(String documentID){
+        deleteAudioComposition(documentID);
+    }
+
+    private void deleteAudioComposition(String documentID){
+        mFirestore.collection("compositions")
+                .document(documentID) //This line dips into the audio clip list and
+                //then uses the compositionID to find the composition we are deleting.
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        //fire callback to view to refresh the list but MAY be done already
+                        //due to the adapter listener
+                    }
+                });
     }
 
     public void setOnAudioCompositionRetrievedListener(OnAudioCompositionRetrievedListener listener){

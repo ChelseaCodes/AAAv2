@@ -2,6 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+<!--<item-->
+    <!--android:id="@+id/app_bar_pause"-->
+    <!--android:icon="@drawable/ic_pause_black_24dp"-->
+    <!--android:title="pause"-->
+    <!--app:showAsAction="never"-->
+    <!--&gt;</item>-->
 
+    <!--<item-->
+        <!--android:id="@+id/app_bar_play"-->
+        <!--android:icon="@drawable/ic_play_arrow_black_24dp"-->
+        <!--android:title="play"-->
+        <!--app:showAsAction="never"-->
+        <!--&gt;</item>-->
 
 </menu>

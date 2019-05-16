@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
@@ -11,7 +10,8 @@
     <androidx.viewpager.widget.ViewPager android:layout_width="match_parent"
         android:layout_height="match_parent"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/vp_audio_clip_view_pager">
+        android:id="@+id/vp_audio_clip_view_pager"
+        >
 
         <androidx.viewpager.widget.PagerTitleStrip
             android:id="@+id/pt_category_title"
@@ -19,6 +19,11 @@
             android:layout_height="wrap_content"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
+            android:background="@color/colorPrimary"
+            android:padding="5dp"
+            android:textSize="25dp"
+            android:textColor="#FFFFFF"
+            android:textAppearance="@style/AppTheme.PageTitleStrip"
             ></androidx.viewpager.widget.PagerTitleStrip>
 
     </androidx.viewpager.widget.ViewPager>

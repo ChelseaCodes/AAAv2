@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -12,6 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 
 public final class MediaPlayerPool {
 
+    private static String TAG = "MediaPlayerPool";
     private int MAX_STREAMS;
     private Context mContext;
     private ArrayList<MediaPlayer> mMediaPlayerPool;
@@ -29,26 +31,27 @@ public final class MediaPlayerPool {
         }
     }
 
-    private MediaPlayer requestPlayer(MediaPlayer.OnPreparedListener listener){
+    private MediaPlayer requestPlayer(){
         if(!mMediaPlayerPool.isEmpty()){
             MediaPlayer m =  mMediaPlayerPool.remove(0);
-            m.setOnPreparedListener(listener);
             mPlayersInUse.add(m);
             return m;
         }
-        else
+        else {
+            Log.d(TAG, "PlayerPool is empty");
             return null;
+        }
     }
 
     private MediaPlayer buildPlayer(){
         MediaPlayer p = new MediaPlayer();
 
-        p.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                recyclePlayer(mp);
-            }
-        });
+//        p.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//                recyclePlayer(mp);
+//            }
+//        });
         return p;
     }
 
@@ -63,23 +66,27 @@ public final class MediaPlayerPool {
       p.reset();
     }
 
-    public MediaPlayer Play(@RawRes int rawID, MediaPlayer.OnPreparedListener listener){
+    public MediaPlayer Play(@RawRes int rawID, MediaPlayer.OnPreparedListener listener, Float volume){
         try{
             AssetFileDescriptor afd = mContext.getResources().openRawResourceFd(rawID);
-            MediaPlayer p = requestPlayer(listener);
+            MediaPlayer p = requestPlayer();
             if(p != null){
                 p.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getDeclaredLength());
                 p.setLooping(true);
+                p.setVolume(volume, volume);
+                p.setOnPreparedListener(listener);
                 p.prepareAsync(); //listener needs to be set and implemented.
             }
-            else
+            else{
+                Log.d(TAG, "requested Player was not granted");
                 return null;
-
+            }
             afd.close();
             return p;
         } catch (Exception e){
-
+            Log.d(TAG, e.toString());
         }
+        Log.d(TAG, "requested Player was not granted");
         return null;
     }
 
@@ -94,7 +101,7 @@ public final class MediaPlayerPool {
     public int Load(@RawRes int rawID, MediaPlayer.OnPreparedListener listener){
         try{
             AssetFileDescriptor afd = mContext.getResources().openRawResourceFd(rawID);
-            MediaPlayer p = requestPlayer(listener);
+            MediaPlayer p = requestPlayer();
             if(p != null){
                 p.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getDeclaredLength());
                 p.prepareAsync(); //listener needs to be set and implemented.
@@ -108,6 +115,22 @@ public final class MediaPlayerPool {
 
         }
         return -1;
+    }
+
+    public void Pause(){
+        //pause all playing media players....
+        for(int i = 0; i < mPlayersInUse.size(); i++){
+            MediaPlayer m = mPlayersInUse.get(i);
+            m.pause();
+        }
+    }
+
+    public void Play(){
+        //play all paused media players....
+        for(int i = 0; i < mPlayersInUse.size(); i++){
+            MediaPlayer m = mPlayersInUse.get(i);
+            m.start();
+        }
     }
 
 }

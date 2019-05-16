@@ -80,7 +80,6 @@ FloatingActionButton.OnClickListener, SaveWIPDialogFragment.OnFragmentInteractio
         fab_save.setOnClickListener(this);
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -98,7 +97,7 @@ FloatingActionButton.OnClickListener, SaveWIPDialogFragment.OnFragmentInteractio
     @OnClick(R.id.fab_save)
     public void onClick(View v) {
         //create an AudioComposition and ship to SaveCompositionActivity
-//        Intent i = new Intent(this, EditComposition.class);
+//        Intent i = new Intent(this, EditCompositionDialogFragment.class);
 //
 //        startActivity(i);
 

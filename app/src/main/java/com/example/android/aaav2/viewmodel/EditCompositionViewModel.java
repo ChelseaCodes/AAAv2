@@ -13,7 +13,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
 /*
-* EditCompositionVM prepares and manages data for EditComposition activity.
+* EditCompositionVM prepares and manages data for EditCompositionDialogFragment activity.
 *
 * */
 public class EditCompositionViewModel extends AndroidViewModel implements Repository.OnAudioCompositionRetrievedListener
@@ -79,5 +79,9 @@ public class EditCompositionViewModel extends AndroidViewModel implements Reposi
 
     public void SaveComposition(AudioComposition ac){
         sourceOfTruth.SaveAudioComposition(ac);
+    }
+
+    public void DeleteComposition(AudioComposition ac){
+        sourceOfTruth.DeleteAudioComposition(ac.getAudioClips().get(0).getCompositionID());
     }
 }

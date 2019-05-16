@@ -4,6 +4,10 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorBackground">#DACBF3</color>
+    <color name="colorBackgroundPlaying">#66BB6A</color>
     <color name="colorIconAccent">#AB47BC</color>
-    <color name="compositionDisplay">#709CCC65</color>
+    <color name="compositionDisplay">#77F06292</color>
+
+    <color name="whiteText">#FFFFFF</color>
+    <color name="greySubtitleText">#F75A5656</color>
 </resources>

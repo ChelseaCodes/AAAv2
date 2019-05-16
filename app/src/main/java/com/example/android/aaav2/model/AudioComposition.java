@@ -12,11 +12,11 @@ public class AudioComposition implements Parcelable {
     private String mUserId;
     private String mCompositionTitle;
     private double mLength;
-    private ArrayList<String> mTags;
+    private String[] mTags;
     private ArrayList<AudioClip> mAudioClips;
 
     public AudioComposition(FirebaseUser user, String CompositionTitle
-            , double Length, ArrayList<String> Tags, ArrayList<AudioClip> AudioClips) {
+            , double Length, String[] Tags, ArrayList<AudioClip> AudioClips) {
         this.mUserId = user.getUid();
         this.mCompositionTitle = CompositionTitle;
         this.mLength = Length;
@@ -25,14 +25,14 @@ public class AudioComposition implements Parcelable {
     }
     public AudioComposition(){
         mAudioClips = new ArrayList<>();
-        mTags = new ArrayList<>();
+        mTags = null;
     }
     public AudioComposition(Parcel in){
 
         this.mUserId = in.readString();
         this.mCompositionTitle = in.readString();
         this.mLength = Double.parseDouble(in.readString());
-        this.mTags = in.readArrayList(null);
+        this.mTags = in.createStringArray();
         mAudioClips = in.createTypedArrayList(AudioClip.CREATOR);
     }
 
@@ -52,11 +52,11 @@ public class AudioComposition implements Parcelable {
         this.mLength = Length;
     }
 
-    public ArrayList<String> getTags() {
+    public String[] getTags() {
         return mTags;
     }
 
-    public void setTags(ArrayList<String> Tags) {
+    public void setTags(String[] Tags) {
         this.mTags = Tags;
     }
 
@@ -96,12 +96,13 @@ public class AudioComposition implements Parcelable {
         return 0;
     }
 
+    //used by firestore to inflate the AudioComposition object
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mUserId);
         dest.writeString(mCompositionTitle);
         dest.writeString(String.valueOf(mLength));
-        dest.writeList(mTags);
+        dest.writeStringArray(mTags);
         dest.writeTypedList(mAudioClips);
     }
 

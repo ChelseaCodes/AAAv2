@@ -130,43 +130,43 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
 
         switch(title){
             case "Gusty":
-                p = mMediaPlayerPool.Play(R.raw.zapsplat_zapsplat_nature_wind_strong_tall_trees_storm_001_17777, this);
+                p = mMediaPlayerPool.Play(R.raw.zapsplat_zapsplat_nature_wind_strong_tall_trees_storm_001_17777, this, 1.0f);
                 break;
             case "Open Window":
-                p = mMediaPlayerPool.Play(R.raw.gain_walkers_rain, this);
+                p = mMediaPlayerPool.Play(R.raw.gain_walkers_rain, this, 1.0f);
                 break;
             case "Crickets":
-                p = mMediaPlayerPool.Play(R.raw.zapsplat_animals_insects_grasshopper_17949, this);
+                p = mMediaPlayerPool.Play(R.raw.zapsplat_animals_insects_grasshopper_17949, this, 1.0f);
                 break;
             case "Closed Window":
-                p = mMediaPlayerPool.Play(R.raw.ftus_rain_wind_blow_rain_against_window_drips, this);
+                p = mMediaPlayerPool.Play(R.raw.ftus_rain_wind_blow_rain_against_window_drips, this, 1.0f);
                 break;
             case "Frogs":
-                p = mMediaPlayerPool.Play(R.raw.frog_sound_effect, this);
+                p = mMediaPlayerPool.Play(R.raw.frog_sound_effect, this, 1.0f);
                 break;
             case "Birds":
-                p = mMediaPlayerPool.Play(R.raw.bird_sounds, this);
+                p = mMediaPlayerPool.Play(R.raw.bird_sounds, this, 1.0f);
                 break;
             case "Gentle Waves":
-                p = mMediaPlayerPool.Play(R.raw.ocean_waves_gentle, this);
+                p = mMediaPlayerPool.Play(R.raw.ocean_waves_gentle, this, 1.0f);
                 break;
             case "Small Campfire":
-                p = mMediaPlayerPool.Play(R.raw.small_campfire, this);
+                p = mMediaPlayerPool.Play(R.raw.small_campfire, this, 1.0f);
                 break;
             case "Cafe":
-                p = mMediaPlayerPool.Play(R.raw.cafe_city_sounds, this);
+                p = mMediaPlayerPool.Play(R.raw.cafe_city_sounds, this, 1.0f);
 
                 break;
             case "Delta":
-                p = mMediaPlayerPool.Play(R.raw.binural_delta_waves, this);
+                p = mMediaPlayerPool.Play(R.raw.binural_delta_waves, this, 1.0f);
 
                 break;
             case "Fireplace":
-                p = mMediaPlayerPool.Play(R.raw.fireplace_fire, this);
+                p = mMediaPlayerPool.Play(R.raw.fireplace_fire, this, 1.0f);
 
                 break;
             case "Cats Purr":
-                p = mMediaPlayerPool.Play(R.raw.cat_purr, this);
+                p = mMediaPlayerPool.Play(R.raw.cat_purr, this, 1.0f);
 
                 break;
             default:
@@ -189,11 +189,15 @@ public class CompositionBuilderViewModel extends AndroidViewModel implements Med
             sourceOfTruth.UpdateClip(ac);
         }
     }
-    public void setAudioVolume(AudioClip ac, float volume){
+    public void setAudioPoolVolume(AudioClip ac, float volume){
         MediaPlayer m = mStreamMap.get(ac.getTitle());
         if(m.isPlaying()){
             m.setVolume(volume, volume);
         }
+        //sourceOfTruth.UpdateClip(ac);
+    }
+
+    public void saveAudioVolume(AudioClip ac, float volume){
         sourceOfTruth.UpdateClip(ac);
     }
 

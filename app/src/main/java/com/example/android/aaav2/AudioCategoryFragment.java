@@ -1,15 +1,8 @@
 package com.example.android.aaav2;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,22 +11,13 @@ import com.example.android.aaav2.adapter.CompositionBuilderAdapter;
 import com.example.android.aaav2.model.AudioClip;
 import com.example.android.aaav2.viewmodel.CompositionBuilderViewModel;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.firebase.ui.firestore.SnapshotParser;
-import com.firebase.ui.firestore.paging.FirestorePagingOptions;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.paging.PagedList;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 
@@ -47,7 +31,8 @@ import butterknife.BindView;
  * create an instance of this fragment.
  */
 public class AudioCategoryFragment extends Fragment implements
-        CompositionBuilderAdapter.OnAudioClipSelectedListener, CompositionBuilderAdapter.OnVolumeChangedListener {
+        CompositionBuilderAdapter.OnAudioClipSelectedListener, CompositionBuilderAdapter.OnVolumeChangedListener,
+        CompositionBuilderAdapter.OnVolumeDoneChangingListener {
 
     @BindView(R.id.rv_audio_clips)
     RecyclerView recyclerView;
@@ -62,9 +47,6 @@ public class AudioCategoryFragment extends Fragment implements
 
     private FirebaseFirestore mFirestore; //needed to access collections/docs
     private Query mQuery;
-
-    private MediaBrowserCompat mMediaBrowser;
-    private MediaBrowserHelper mMediaBrowserHelper;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -174,12 +156,13 @@ public class AudioCategoryFragment extends Fragment implements
                 .setQuery(mQuery, AudioClip.class)
                 .build();
 
-        CompositionBuilderAdapter mAdapter = new CompositionBuilderAdapter(options, this, this);
+        CompositionBuilderAdapter mAdapter = new CompositionBuilderAdapter(options, this, this, this);
 
         mLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setAdapter(mAdapter);
         recyclerView.setHasFixedSize(true);
+        mAdapter.startListening();
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -226,7 +209,12 @@ public class AudioCategoryFragment extends Fragment implements
         ac.setVolume(String.valueOf(volume));
 
         //set volume of mediaplayerpool
-        mViewModel.setAudioVolume(ac, volume);
+        mViewModel.setAudioPoolVolume(ac, volume);
+    }
+
+    @Override
+    public void onVolumeDoneChangingListener(AudioClip ac, float volume, int adapterPos) {
+        ac.setVolume(String.valueOf(volume));
     }
 
     /**

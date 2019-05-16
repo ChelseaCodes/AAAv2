@@ -10,4 +10,21 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="AppTheme.TextAppearance.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="fontFamily">monospace</item>
+    </style>
+
+    <style name="AppTheme.CardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">10dp</item>
+    </style>
+
+    <style name="AppTheme.TextAppearance.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">monospace</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/greySubtitleText</item>
+    </style>
+
+    <style name="AppTheme.PageTitleStrip">
+        <item name="android:fontFamily">monospace</item>
+    </style>
 </resources>
